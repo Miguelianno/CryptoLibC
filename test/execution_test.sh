@@ -193,4 +193,3 @@ fi
 
 echo "All test passed succesfully!!"
 exit 0
-exit 0
