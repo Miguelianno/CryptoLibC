@@ -16,7 +16,7 @@ int main (int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error initializing global ATCADevice\n", status);
-        exit(status);
+        return -1;
     }
 
     /* Generates 32 byte random number from the device */

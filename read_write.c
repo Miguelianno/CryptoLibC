@@ -47,6 +47,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating random number\n");
+        exit(-1);
     }
 	
     fprintf(stdout, "Data to be written: \n");
@@ -57,7 +58,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error writing bytes to the device\n", status);
-	exit(status);
+	exit(-1);
     }
     fprintf(stdout, "Write Success\n");
 
@@ -66,7 +67,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading bytes from device\n");
-	    exit(status);
+	exit(-1);
     }
 
     fprintf(stdout, "Read Success\n");
@@ -89,7 +90,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading bytes from device\n");
-	exit(status);
+	exit(-1);
     }
 
     /* Generates a private key in TempKey 
@@ -97,7 +98,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating temporary key\n");
-        exit(status);
+        exit(-1);
     }*/
 
     fprintf(stdout, "Generating data using RAND command\n");
@@ -110,7 +111,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error encrypting data: %x\n", status);
-	exit(status);
+	exit(-1);
     }
 
     /* Performs AES-128 operation with a key in the device */
@@ -118,7 +119,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error encrypting data: %x\n", status);
-	exit(status);
+	exit(-1);
     }
 
     /* Generates random nonce */
@@ -129,7 +130,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating nonce: %x\n", status);
-        exit(status);
+        exit(-1);
     }
 
     /* Performs a SHA256 on the source data with the content in TempKey */
@@ -137,7 +138,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error in gendig: %x\n", status);
-        exit(status);
+        exit(-1);
     }
 
     /* Performs and encrypted write of the premaster secret in the specified slot */
@@ -145,7 +146,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error writing the secret: %x\n", status);
-        exit(status);
+        exit(-1);
     }
 
     fprintf(stdout, "Write encrypted succesfully done!\n");
@@ -158,7 +159,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error in generating nonce: %x\n", status);
-        exit(status);
+        exit(-1);
     }
     atcab_nonce(num_in);
     status = atcab_nonce_rand(num_in, rand_out);
@@ -168,14 +169,14 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error in gendig: %x\n", status);
-        exit(status);
+        exit(-1);
     }
 
     status = atcab_info_base(2, 0, response);
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error info base: %x\n", status);
-        exit(status);
+        exit(-1);
     }
 
     printf("Response: ");
@@ -187,7 +188,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading encrypted data from the device: %x\n", status);
-	exit(status);
+	exit(-1);
     }
     
     fprintf(stdout, "Readed data: ");
@@ -222,7 +223,7 @@ int main(int argc, char **argv)
     if (argc < 2)
     {
         fprintf(stderr, "Please specify a slot to read from\n");
-	exit(-1);
+	return -1;
     }
 
     while ((c = getopt (argc, argv, "n:h::")) != -1)
@@ -240,13 +241,13 @@ int main(int argc, char **argv)
 		if (optopt == 'n')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    exit(-1);
+		    return -1;
 		}
 		break;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
-		return 1;
+		return -2;
 	}
     }
 
@@ -256,7 +257,7 @@ int main(int argc, char **argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error initializing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 	
     /* Reads the complete device configuration zone */
@@ -264,7 +265,7 @@ int main(int argc, char **argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading from the config zone\n");
-        exit(status);
+        return -1;
     }
 	
     config = set_configuration(config_data);
@@ -276,7 +277,7 @@ int main(int argc, char **argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading from data zone\n");
-	exit(status);
+	return -1;
     }
 
     fprintf(stdout, "Data read from slot %d: ", slot);
@@ -287,8 +288,8 @@ int main(int argc, char **argv)
     if (status != ATCA_SUCCESS)
     {
         printf("Error releasing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
-    exit(status);
+    return status;
 }

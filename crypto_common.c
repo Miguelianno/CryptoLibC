@@ -52,6 +52,11 @@ uint8_t* hash_file(FILE* fp)
     uint8_t *digest;
     uint8_t message[DATA_SIZE];
 
+    if (fp == NULL)
+    {
+        return NULL;
+    } 
+
     digest = (uint8_t*)malloc(SIGNATURE_SIZE*sizeof(uint8_t));
     if (digest == NULL)
     {
@@ -69,7 +74,7 @@ uint8_t* hash_file(FILE* fp)
 	if (status != ATCA_SUCCESS)
 	{
 	    fprintf(stderr, "Error finalizing sha\n");
-	    exit(status);
+	    return NULL
 	}
     
 	end_sha_flag = 1;
@@ -87,7 +92,7 @@ uint8_t* hash_file(FILE* fp)
 	    if (status != ATCA_SUCCESS)
 	    {
                 fprintf(stderr, "Error updating sha\n");
-		exit(status);
+		return NULL;
 	    }
            
 	    fseek(fp, file_index, SEEK_SET);
@@ -101,7 +106,7 @@ uint8_t* hash_file(FILE* fp)
 	    if (status != ATCA_SUCCESS)
 	    {
 	        fprintf(stderr, "Error finalizing sha\n");
-	        exit(status);
+	        return NULL;
 	    }
 			
 	    end_sha_flag = 1;
@@ -113,7 +118,8 @@ uint8_t* hash_file(FILE* fp)
 }
 
 /* Decrypts the information stored in the specified file with the key stored in the given slot */
-int aes_decryption(char* filename, uint16_t slot){
+int aes_decryption(char* filename, uint16_t slot)
+{
     FILE* fi;
     FILE* fo;
     uint8_t text[ENC_SIZE];
@@ -122,6 +128,11 @@ int aes_decryption(char* filename, uint16_t slot){
     uint8_t out[ENC_SIZE];
     char* out_file = "dec.txt";
     
+    if (filename == NULL || slot < 0)
+    { 
+        return -1;
+    }
+ 
     fprintf(stdout, "Decrypting file\n");
     fi = fopen(filename, "r");
     if (fi == NULL)
@@ -134,7 +145,7 @@ int aes_decryption(char* filename, uint16_t slot){
     if (fo == NULL)
     {
         fprintf(stderr, "File %s does not exist\n", out_file);
-    return -1;
+        return -1;
     }
  
     while (read_hex_from_file(fi, text) != EOF)
@@ -161,7 +172,8 @@ int aes_decryption(char* filename, uint16_t slot){
 }
 
 /* Encrypts the information stored in the specified file with the key stored in the given slot */
-int aes_encryption(char* filename, char* text, uint16_t slot){
+int aes_encryption(char* filename, char* text, uint16_t slot)
+{
     FILE* fi = NULL;
     FILE* fo;
     int i = 0, text_size;
@@ -171,6 +183,11 @@ int aes_encryption(char* filename, char* text, uint16_t slot){
     char out[ENC_SIZE];
     char* out_file = "enc.txt";
     
+    if ((filename == NULL && text == NULL) || slot < 0)
+    {
+        return -1;
+    }
+
     fprintf(stdout, "Encrypting file\n");
     if (strcmp(filename, "\0"))
     {
@@ -249,6 +266,7 @@ int aes_encryption(char* filename, char* text, uint16_t slot){
     return 0;
 }
 
+// VER SI BORRAR COMENTADO
 
 /*int decrypt_file(char* filename, uint16_t slot){
 	FILE* fi;
@@ -332,6 +350,7 @@ int encrypt_file(char* filename, uint16_t slot){
 }
 */
 
+// VER BORRAR?
 /* Performs a cbcmac operation using the key of the specified slot */
 uint8_t* cbcmac(struct atca_aes_cbc_ctx ctx, int slot, uint8_t* data, int step, struct atca_aes_cbcmac_ctx cbcmac_ctx){
     ATCA_STATUS status;
@@ -364,6 +383,7 @@ uint8_t* cbcmac(struct atca_aes_cbc_ctx ctx, int slot, uint8_t* data, int step, 
     return mac;
 }
 
+// VER BORRAR?
 /* Performs a cmac operation using the key of the specified slot */
 uint8_t* cmac(struct atca_aes_cbc_ctx ctx, int slot, uint8_t* data, int step){
     struct atca_aes_cmac_ctx cmac_ctx;
@@ -404,6 +424,7 @@ uint8_t* cmac(struct atca_aes_cbc_ctx ctx, int slot, uint8_t* data, int step){
     return cmac;
 }
 
+// VER borrar auth mode??
 /* Performs a cbc encryption of the data specified in filename */
 int cbc_encryption(char* filename, char* text, uint16_t slot, int auth_mode, struct atca_aes_cbc_ctx ctx)
 {
@@ -418,6 +439,11 @@ int cbc_encryption(char* filename, char* text, uint16_t slot, int auth_mode, str
     uint8_t mac[ENC_SIZE];
     int i = 0, text_size;
     struct atca_aes_cmac_ctx cmac_ctx;
+
+    if ((filename == NULL && text == NULL) || slot < 0)
+    {
+        return -1;
+    }
 
     if (strcmp(filename, "\0"))
     {
@@ -510,6 +536,12 @@ int cmac_encryption(char* filename, char* text, uint16_t slot, int auth_mode, st
     uint8_t mac[ENC_SIZE];
     int i = 0, text_size;
     struct atca_aes_cmac_ctx cmac_ctx;
+
+
+    if ((filename == NULL && text == NULL) || slot < 0)
+    {
+        return -1;
+    } 
 
     if (strcmp(filename, "\0"))
     {
@@ -644,6 +676,11 @@ int cbcmac_encryption(char* filename, char* text, uint16_t slot, int auth_mode, 
     uint8_t mac[ENC_SIZE];
     int i = 0, text_size;
 
+    if ((filename == NULL && text == NULL) || slot < 0)
+    {
+        return -1;
+    }
+
     if (strcmp(filename, "\0"))
     {
         fi = fopen(filename, "r");
@@ -767,8 +804,12 @@ int cbc_decryption(char* filename, uint16_t slot, int auth_mode, struct atca_aes
     uint8_t mac[ENC_SIZE];
     char* res;
     struct atca_aes_cmac_ctx cmac_ctx;
-
-	    printf("AQUI\n");
+ 
+    if (filename == NULL || slot < 0)
+    {
+        return -1;
+    }
+    
     fi = fopen(filename, "r");
     if (fi == NULL)
     {
@@ -819,6 +860,11 @@ int cmac_decryption(char* filename, uint16_t slot, int auth_mode, struct atca_ae
     uint8_t mac[ENC_SIZE];
     char* res;
     struct atca_aes_cmac_ctx cmac_ctx;
+    
+    if (filename == NULL || slot < 0)
+    {
+        return -1;
+    }
 
     fi = fopen(filename, "r");
     if (fi == NULL)
@@ -906,6 +952,11 @@ int cbcmac_decryption(char* filename, uint16_t slot, int auth_mode, struct atca_
     uint8_t mac[ENC_SIZE];
     char* res;
 
+    if (filename == NULL || slot < 0)
+    {
+        return -1;
+    }
+
     fi = fopen(filename, "r");
     if (fi == NULL)
     {
@@ -991,6 +1042,11 @@ int ctr_encryption(char* filename, char* text, struct atca_aes_ctr_ctx ctx)
     uint8_t out[ENC_SIZE];
     ATCA_STATUS status;
 
+    if (filename == NULL && text == NULL)
+    {
+        return -1;
+    }
+
     if (strcmp(filename, "\0"))
     {
         fi = fopen(filename, "r");
@@ -1048,7 +1104,6 @@ int ctr_encryption(char* filename, char* text, struct atca_aes_ctr_ctx ctx)
 	        strncpy(str, aux, ENC_SIZE);
 	    }
 
-	    printf("Str: %s\n", str);
     	    /* Encrypt a block of data using CBC mode and a key within the device */
             status = atcab_aes_ctr_encrypt_block (&ctx, str, out);
 	    if (status != ATCA_SUCCESS)
@@ -1098,6 +1153,11 @@ int ctr_decryption(char* filename, struct atca_aes_ctr_ctx ctx)
     uint8_t out[ENC_SIZE];
     char* res;
     ATCA_STATUS status;
+
+    if (filename == NULL)
+    {
+        return -1;
+    }
 
     fi = fopen(filename, "r");
     if (fi == NULL)
@@ -1158,6 +1218,11 @@ int ccm_encryption(char* filename, char* text, struct atca_aes_ccm_ctx ctx, uint
     char* aux;
     uint8_t out[ENC_SIZE];
     ATCA_STATUS status;
+
+    if (filename == NULL && text == NULL)
+    {
+        return -1;
+    }
 
     if (strcmp(filename, "\0"))
     {
@@ -1309,6 +1374,7 @@ int ccm_encryption(char* filename, char* text, struct atca_aes_ccm_ctx ctx, uint
     return 0;
 }
 
+// VER PROCESS aad on decryption??
 /* Performs a ccm decryption of the data specified in filename */
 int ccm_decryption(char* filename, struct atca_aes_ccm_ctx ctx, uint8_t* tag, char* filename2, char* aad)
 {
@@ -1322,6 +1388,11 @@ int ccm_decryption(char* filename, struct atca_aes_ccm_ctx ctx, uint8_t* tag, ch
     int i = 0;
     ATCA_STATUS status;
     bool is_verified;
+
+    if (filename == NULL)
+    {
+        return -1;
+    }
 
     fprintf(stdout, "Initializing ccm decryption\n");
     fi = fopen(filename, "r");
@@ -1391,21 +1462,22 @@ int ccm_decryption(char* filename, struct atca_aes_ccm_ctx ctx, uint8_t* tag, ch
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error encrypting\n");
-	    fclose(fo);
-	    fclose(fi);
-	    fclose(fi2);
+	fclose(fo);
+	fclose(fi);
+	fclose(fi2);
+        return -1;
     }
 
     while (read_hex_from_file(fi, str) != EOF)
     {
     	/* Process data using CCM mode and a key within the ATECC608A device */
-	    status = atcab_aes_ccm_decrypt_update (&ctx, str, ENC_SIZE, out);
-	    if (status != ATCA_SUCCESS)
-	    {
+	status = atcab_aes_ccm_decrypt_update (&ctx, str, ENC_SIZE, out);
+	if (status != ATCA_SUCCESS)
+	{
             fprintf(stderr, "Error encrypting\n");
-	        fclose(fo);
-	        fclose(fi);
-	        return -1;
+	    fclose(fo);
+	    fclose(fi);
+	    return -1;
         }
         res = uint8_to_char(out, 16);
         fprintf(fo, "%s", res);
@@ -1431,7 +1503,7 @@ int ccm_decryption(char* filename, struct atca_aes_ccm_ctx ctx, uint8_t* tag, ch
         free(res);
         fclose(fo);
         fclose(fi);
-	    return -1;
+	return -1;
     }
 
     free(res);
@@ -1453,6 +1525,11 @@ int gcm_encryption(char* filename, char* text, struct atca_aes_gcm_ctx ctx, uint
     int i = 0, text_size;
     uint8_t out[ENC_SIZE];
     ATCA_STATUS status;
+
+    if (filename == NULL && text == NULL)
+    {
+        return -1;
+    }
 
     if (strcmp(filename, "\0"))
     {
@@ -1594,6 +1671,7 @@ int gcm_encryption(char* filename, char* text, struct atca_aes_gcm_ctx ctx, uint
     return 0;
 }
 
+// VER uso de aad en decryption??
 /* Performs a gcm decryption of the data specified in filename */
 int gcm_decryption(char* filename, struct atca_aes_gcm_ctx ctx, uint8_t* tag, char* filename2, char* aad)
 {
@@ -1607,6 +1685,11 @@ int gcm_decryption(char* filename, struct atca_aes_gcm_ctx ctx, uint8_t* tag, ch
     char* res;
     ATCA_STATUS status;
     bool is_verified;
+
+    if (filename == NULL)
+    {
+        return -1;
+    }
 
     fprintf(stdout, "Starting gcm decryption\n");
     fi = fopen(filename, "r");

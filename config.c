@@ -72,7 +72,7 @@ void generate_key(struct _atecc608_config config)
         }
 		
         fprintf(stdout, "Generating key pair in slot %d\n", i);
-	/* Generates a new random private in the specified slot */
+	/* Generates a new random private key in the specified slot */
         status = atcab_genkey(i, public_key);
         if(status != ATCA_SUCCESS)
         {

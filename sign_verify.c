@@ -52,7 +52,7 @@ bool verify_device(uint8_t *message, uint8_t *signature, uint8_t *public_key)
     status = atcab_verify_extern(message, signature, public_key, &is_verified);
     if (status != ATCA_SUCCESS)
     {
-        fprintf(stderr, "Error vverifyng device\n");
+        fprintf(stderr, "Error verifyng device\n");
 	return 0;
     }
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
     if(argc < 2)
     {
         fprintf(stderr, "You need to specify at least a filename to sign or a slot number, use -h argument for help\n");
-	exit(-1);
+	return -1;
     }
 
     gCfg->atcai2c.bus=1;
@@ -95,13 +95,12 @@ int main(int argc, char** argv)
             case 'h':
                 help(argv[0]);
                 break;
-		return 1;
             case 'f':
 		fp = fopen(optarg, "r");
                 if (fp == NULL)
                 {
     	            fprintf(stderr, "Error opening file %s\n", optarg);
-    	            exit(status);
+    	            return -1;
                 }
 		break;
             case 'n':
@@ -112,13 +111,13 @@ int main(int argc, char** argv)
 		if (optopt == 'f' || optopt == 'n')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    exit(-1);
+		    return -1;
 		}
 		break;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
-		return 1;
+		return -2;
 	}
     }
 
@@ -127,7 +126,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error initializing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
     if (fp != NULL)
@@ -138,7 +137,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error starting sha engine\n");
-	    exit(status);
+	    return -1;
         }
 
         /* Generate the digest of a given file */
@@ -152,7 +151,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error getting public key\n");
-	    exit(status);
+	    return -1;
         }
 		
         /* Performs a digital signature from the given digest */
@@ -160,7 +159,7 @@ int main(int argc, char** argv)
         if (file_signature == NULL)
         {
             fprintf(stderr, "Error signing\n");
-	    exit(status);
+	    return -1;
         }
 		
         fprintf(stdout, "Signature: ");
@@ -191,7 +190,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error generating key\n");
-	    exit(status);
+	    return -1;
         }
 
 	fprintf(stdout, "Public key generated: ");
@@ -202,7 +201,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error generating digest of the public key\n");
-	    exit(status);
+	    return -1;
         }
 
 	fprintf(stdout, "Digest of the public key: ");
@@ -213,7 +212,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error signing internal message\n");
-	    exit(status);
+	    return -1;
         }
 
 	fprintf(stdout, "Signature: ");
@@ -224,7 +223,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error getting public key\n");
-	    exit(status);
+	    return -1;
         }
 
         /* Validates a public key stored in a slot */
@@ -232,7 +231,7 @@ int main(int argc, char** argv)
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error validating internal public key\n");
-	    exit(status);
+	    return -1;
         }
     
         (is_verified) ? fprintf(stdout, "Public key verified succesfully!\n"): fprintf(stdout, "The public key couldn't be verified\n");
@@ -243,8 +242,8 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stdout, "Error releasing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
-    exit(status);
+    return 0;
 }

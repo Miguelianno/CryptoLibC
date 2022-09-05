@@ -31,37 +31,32 @@ ATCADevice getATCADevice()
 }
 
 /* Converts a string of characters into an array of bytes */
-uint8_t* char_to_uint8(char* str, int size)
+int char_to_uint8(char* str, uint8_t* res, int size)
 {
     int i;
-    uint8_t* res;
 	
-    res = (uint8_t*)malloc(ENC_SIZE*sizeof(uint8_t));
-    if (res == NULL)
+    if (size <= 0 || str == NULL)
     {
-        fprintf(stderr, "Error allocating memory\n");
-	return NULL;
+        return -1;
     }
-	
+
     for (i = 0; i < size; i++)
     {
        res[i] = (uint8_t)str[i];
     }
 	
-    return res;
+    return 0;
 }
 
 /* Convert a group of bytes into a string of characters */
-char* uint8_to_char(uint8_t* data, int size)
+int uint8_to_char(uint8_t* data, char* res, int size)
 {
     int i = 0;
     char* res;
 	
-    res = (char*)malloc(ENC_SIZE*sizeof(char));
-    if (res == NULL)
+    if (size <= 0 || data == NULL)
     {
-        fprintf(stderr, "Error allocating memory\n");
-	return NULL;
+        return -1;
     }
 	
     for (int i = 0; i < size; i++)
@@ -69,7 +64,7 @@ char* uint8_to_char(uint8_t* data, int size)
         res[i] = (char)data[i];
     }
 	
-    return res;
+    return 0;
 }
 
 /* Returns the specified configuration */
@@ -177,6 +172,11 @@ uint32_t set_32_field(uint8_t* data, int index)
     uint32_t res = 0;
     uint32_t aux = 0;
 
+    if (data == NULL || index < 0)
+    {
+        return -1;
+    }
+
     while (shift >= 0)
     {
         aux = data[index] & 0xff;
@@ -196,7 +196,12 @@ uint16_t set_16_field(uint8_t* data, int index)
     int i = 0;
     uint16_t res = 0;
     uint16_t aux = 0;
-		
+
+    if (data == NULL || index < 0)
+    {
+        return -1;
+    }
+    
     while (shift >= 0)
     {
         aux = data[index] & 0xff;
@@ -331,7 +336,12 @@ struct _atecc608_config set_configuration(uint8_t* config_data)
 int read_hex_from_file(FILE* fp, uint8_t* text)
 {
     int res;
-
+    
+    if (fp == NULL)
+    {
+        return -1;
+    }
+ 
     res = fscanf(fp, "%X %X %X %X %X %X %X %X %X %X %X %X %X %X %X %X", \
 		      &text[0], &text[1], &text[2], &text[3], &text[4], \
 		      &text[5], &text[6], &text[7], &text[8], &text[9], \
@@ -341,20 +351,31 @@ int read_hex_from_file(FILE* fp, uint8_t* text)
 }
 
 /* Writes a number of bytes into a file */
-void print_hex_to_file(uint8_t* bin, size_t size, FILE* fp)
+int print_hex_to_file(uint8_t* bin, size_t size, FILE* fp)
 {
 
+    if (fp == NULL || bin == NULL || size <= 0)
+    {
+        return -1;
+    }
+    
     for(int i=0; i < size; i++)
     { 
         fprintf(fp, "%X ", bin[i]);
     }
  
     fprintf(fp, "\n");
+    return 1;
 }
 
 /* Prints a group of bytes in hexadecimal format */
-void print_hex(uint8_t* bin, size_t size)
+int print_hex(uint8_t* bin, size_t size)
 {
+
+    if (bin == NULL || size <= 0)
+    {
+        return -1;
+    }
 
     for(int i=0; i < size; i++)
     {
@@ -362,34 +383,6 @@ void print_hex(uint8_t* bin, size_t size)
     }
  
     printf("\n");
+    return 1;
 }
 
-/*void main()
-{
-    ATCA_STATUS status;
-	bool conf_is_locked;
-	bool data_is_locked;
-	char response[50];
-	struct _atecc508a_config config;
-	
-	ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
-
-    gCfg->atcai2c.bus=1;
-    status = atcab_init(gCfg);
-	if (status != ATCA_SUCCESS)
-    {
-        printf("Error1\n");
-        exit(status);
-    }
-	config = set_configuration();
-	
-	print_configuration(config);
-	
-	status = atcab_release();
-    if (status != ATCA_SUCCESS)
-    {
-        printf("Error7\n");
-        exit(status);
-    }
-    exit(status);
-}*/

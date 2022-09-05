@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error  initializing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
     
     /* Read the complete device configuration zone */
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading config zone\n");
-        exit(status);
+        return -1;
     }
     
     config = set_configuration(config_data);
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating random number\n");
-        exit(status);
+        return -1;
     }
 
     fprintf(stdout, "Generated data:\n");
@@ -105,13 +105,13 @@ int main(int argc, char** argv)
 		if (optopt == 'f' || optopt == 'm' || optopt == 't' || optopt == 'd' || optopt == 'a')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    exit(-1);
+		    return -1;
 		}
 		break;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
-		return 1;
+		return -2;
         }
     }
 
@@ -140,14 +140,14 @@ int main(int argc, char** argv)
 	if (cbc_encryption(filename, text, 5, 1, ctx) == -1)
 	{
 	    fprintf(stderr, "Error in cbc encryption\n");
-            exit(status);
+            return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
 	if (cbc_decryption("enc.txt", 5, 1, ctx) == -1)
 	{
 	    fprintf(stderr, "Error in cbc encryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else if (strcmp (mode, "cbcmac") == 0)
@@ -175,14 +175,14 @@ int main(int argc, char** argv)
 	if (cbcmac_encryption(filename, text, 5, 1, ctx) == -1)
 	{
 	    fprintf(stderr, "Error in cbc encryption\n");
-	    exit(status);
+	    return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
 	if (cbcmac_decryption("enc.txt", 5, 1, ctx) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else if (strcmp (mode, "cmac") == 0)
@@ -210,14 +210,14 @@ int main(int argc, char** argv)
 	if (cmac_encryption(filename, text, 5, 1, ctx) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
-	    exit(status);
+	    return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
 	if (cmac_decryption("enc.txt", 5, 1, ctx) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else if (strcmp (mode, "ccm") == 0)
@@ -248,13 +248,13 @@ int main(int argc, char** argv)
 	if (ccm_encryption(filename, text, ccm_ctx, tag, &tag_size, filename2, aad) == -1)
 	{
 	    fprintf(stderr, "Error in ctr encryption\n");
-	    exit(status);
+	    return -1;
 	}
 
 	if (ccm_decryption("enc.txt", ccm_ctx, tag, filename2, aad) == -1)
         {
             fprintf(stderr, "Error in ctr encryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else if (strcmp (mode, "gcm") == 0)
@@ -285,13 +285,13 @@ int main(int argc, char** argv)
 	if (gcm_encryption(filename, text, gcm_ctx, tag, &tag_size, filename2, aad) == -1)
 	{
 	    fprintf(stderr, "Error in gcm encryption\n");
-	    exit(status);
+	    return -1;
 	}
 
 	if (gcm_decryption("enc.txt", gcm_ctx, tag, filename2, aad) == -1)
 	{
 	    fprintf(stderr, "Error in gcm encryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else if (strcmp (mode, "ctr") == 0)
@@ -319,13 +319,13 @@ int main(int argc, char** argv)
 	if (ctr_encryption(filename, text, ctr_ctx) == -1)
 	{
 	    fprintf(stderr, "Error in ctr encryption\n");
-	    exit(status);
+	    return -1;
 	}
 
 	if (ctr_decryption("enc.txt", ctr_ctx) == -1)
 	{
 	    fprintf(stderr, "Error in ctr encryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else if (strcmp(mode, "aes") == 0)
@@ -335,20 +335,20 @@ int main(int argc, char** argv)
 	if (aes_encryption(filename, text, 5) == -1)
 	{
 	    fprintf(stderr, "Error in ctr encryption\n");
-	    exit(status);
+	    return -1;
 	}
 
 	if (aes_decryption("enc.txt", 5) == -1)
 	{
 	    fprintf(stderr, "Error in aes decryption\n");
-	    exit(status);
+	    return -1;
 	}
     }
     else 
     {
         fprintf(stderr, "Encryption mode not recognised\n");
 	fprintf(stderr, "Use argument -h for help\n");
-	return 1;
+	return -1;
     }
 
     /* Release the global ATCADevice instance */
@@ -356,8 +356,8 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error releasing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
-    exit(status);
+    return status;
 }

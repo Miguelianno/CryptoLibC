@@ -82,6 +82,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
     status = atcab_ecdh_tempkey(pubb, pms);
     if (status != ATCA_SUCCESS)
     {
+        fprintf(stderr, "Error performing ECDH command with a private key\n");
         return status;
     }
 
@@ -89,6 +90,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
     status = atcab_ecdh(genkey_slot, puba, secret);
     if (status != ATCA_SUCCESS)
     {
+        fprintf(stderr, "Error performing ECDH command\n");
         return status;
     }
 
@@ -100,7 +102,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
     else
     {
         fprintf(stdout, "Error in calculation\n");
-	return ATCA_GEN_FAIL;
+	return status;
     }
 
     /* Returns internal device information to check if TempKey is valid for encrypted write */
@@ -108,7 +110,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error info base: %x\n", status);
-        exit(status);
+        return status;
     }
 
     if (response[0] == 0x20 && response[1] == 0x81)
@@ -159,7 +161,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
 	fprintf(stdout, "Write encrypted succesfully done!\n");
     }
 
-    return ATCA_SUCCESS;
+    return status
 }
 
 int main(int argc, char** argv)
@@ -169,6 +171,7 @@ int main(int argc, char** argv)
     struct _atecc608_config config;
     uint8_t nonce[32];
     int c;
+    int ret;
     char text[BUFFER_SIZE] = "\0";
     char filename[FILENAME_SIZE]= "\0";
 
@@ -200,13 +203,13 @@ int main(int argc, char** argv)
 		if (optopt == 'f' || optopt == 't')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    exit(-1);
+		    return -1;
 		}
 		break;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
-		exit(-1);
+		return -2;
 	}
     }
 
@@ -215,7 +218,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error initializing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
     /* Reads the configuration zone of the device */
@@ -223,7 +226,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading config zone\n");
-        exit(status);
+        return -1;
     }
 	
     config = set_configuration(config_data);
@@ -231,17 +234,17 @@ int main(int argc, char** argv)
     fprintf(stdout, "Generating secrets...\n");
     /* Generates the shared secret for encryption */
     status = ECDH(config);
-    if (status != ATCA_SUCCESS)
+    if (status == ATCA_SUCCESS)
     {
         fprintf(stderr, "Error in ecdh generation\n");
-        exit(status);
+        return -1;
     }
 	
     /* Performs aes encryption with the shared secret on the file/text given */
     if (aes_encryption(filename, text, 5) == -1)
     {
 	fprintf(stderr, "Error in ctr encryption\n");
-	exit(status);
+	return -1;
     }
 
     fprintf(stdout, "Encryption succesfully done, check enc.txt\n");
@@ -249,7 +252,7 @@ int main(int argc, char** argv)
     if (aes_decryption("enc.txt", 5) == -1)
     {
 	fprintf(stderr, "Error in aes decryption\n");
-	exit(status);
+	return -1;
     }
 
     fprintf(stdout, "Decryption succesfully done, check dec.txt\n");
@@ -258,8 +261,8 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error releasing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
-    exit(status);
+    return status;
 }

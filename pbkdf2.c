@@ -37,6 +37,11 @@ int main(int argc, char** argv)
                 break;
 	    case 'i':
                 iters = atoi(optarg);
+                if (iters < 1000)
+                {
+                    fprintf(stderr, "Number of iterations need to at least 1000\n");
+                    return -1;
+                }
 		break;
 	    case 'n':
 		slot = atoi(optarg);
@@ -49,20 +54,20 @@ int main(int argc, char** argv)
 		if (optopt == 'i' || optopt == 'n' || optopt == 'o')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    exit(-1);
+		    return -1;
 		}
 		break;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
-		return 1;
+		return -2;
 	}
     }
 
     if (argc < 3)
     {
         fprintf(stderr, "You need to include three arguments, check -h argument for help\n");
-	exit(-1);
+	return -1;
     }
 
     gCfg->atcai2c.bus=1;
@@ -72,7 +77,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error initializing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 	
     /* Reads the complete device configuration zone */
@@ -80,7 +85,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Errorreading config zone\n");
-        exit(status);
+        return -1;
     }
 	
     config = set_configuration(config_data);
@@ -90,7 +95,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
 	fprintf(stderr, "Error generating random number\n");
-        return status;
+        return -1;
     }
 
     /* Calculates a PBKDF2 password hash using a stored key inside the device */
@@ -98,7 +103,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating pbkdf2 password hash\n");
-	exit(status);
+	return -1;
     }
 
     fprintf(stdout, "Key generated: ");
@@ -109,7 +114,7 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error writing bytes to the specified slot\n");
-	exit(status);
+	return -1;
     }
     fprintf(stdout, "Write Success\n");
 	
@@ -118,8 +123,8 @@ int main(int argc, char** argv)
     if (status != ATCA_SUCCESS)
     {
         printf("Error releasing global ATCA Device\n");
-        exit(status);
+        return -1;
     }
 
-    exit(status);
+    return status;
 }
