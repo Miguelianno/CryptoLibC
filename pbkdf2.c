@@ -54,9 +54,8 @@ int main(int argc, char** argv)
 		if (optopt == 'i' || optopt == 'n' || optopt == 'o')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    return -1;
 		}
-		break;
+		return -2;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
@@ -107,7 +106,7 @@ int main(int argc, char** argv)
     }
 
     fprintf(stdout, "Key generated: ");
-    print_hex(key, KEY_LENGTH);
+    print_hex_to_file(key, KEY_LENGTH, stdout);
 
     /* Writes data to a slot */
     status = atcab_write_bytes_zone(ATCA_ZONE_DATA, out_slot, 0, key, KEY_LENGTH);

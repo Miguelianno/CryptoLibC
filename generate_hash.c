@@ -52,7 +52,7 @@ int main(int argc, char** argv)
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
 		    return -1;
 		}
-		break;
+		return -2;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
@@ -60,6 +60,7 @@ int main(int argc, char** argv)
 	}
     }
 
+    printf("HOLA\n");
     if (argc < 2)
     {
         fprintf(stderr, "You need to include at least one argument, check -h argument for help\n");
@@ -113,7 +114,7 @@ int main(int argc, char** argv)
 	}
 	
         fprintf(stdout, "The result hash of the file is: ");
-	print_hex(file_digest, 32);
+	print_hex_to_file(file_digest, 32, stdout);
 
         free(file_digest);
 	fclose(fp);
@@ -130,7 +131,7 @@ int main(int argc, char** argv)
 	}
 
         fprintf(stdout, "The result hash of the given text is: ");
-	print_hex(text_digest, 32);
+	print_hex_to_file(text_digest, 32, stdout);
     }
 	
 

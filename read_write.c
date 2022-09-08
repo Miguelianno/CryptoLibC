@@ -51,7 +51,7 @@ void read_write(struct _atecc608_config config)
     }
 	
     fprintf(stdout, "Data to be written: \n");
-    print_hex(write_data, 32);
+    print_hex_to_file(write_data, 32, stdout);
 
     /* Writes data to a slot */
     status = atcab_write_bytes_zone(ATCA_ZONE_DATA, CLEAR, 0, write_data, sizeof(write_data));
@@ -72,7 +72,7 @@ void read_write(struct _atecc608_config config)
 
     fprintf(stdout, "Read Success\n");
     fprintf(stdout, "Read data:\n");
-    print_hex(read_data, 32);
+    print_hex_to_file(read_data, 32, stdout);
 
     /* Compares the data read with the written data */
     fprintf(stdout, "Verifing read data matches written data:\n");
@@ -150,7 +150,7 @@ void read_write(struct _atecc608_config config)
     }
 
     fprintf(stdout, "Write encrypted succesfully done!\n");
-    print_hex(ciphertext, 32);
+    print_hex_to_file(ciphertext, 32, stdout);
 
     /* Generates random nonce 
     status = generate_nonce(rand_out);  
@@ -180,7 +180,7 @@ void read_write(struct _atecc608_config config)
     }
 
     printf("Response: ");
-    print_hex(response, 4); 
+    print_hex_to_file(response, 4, stdout); 
     // Reading the key in plain text from slot '10' 
     fprintf(stdout, "Encrypted Read Command: \n");
     status = atcab_read_enc(ENCRYPTED, 0, read_data, ENC_KEY, write_key_slot, rand_out);
@@ -192,7 +192,7 @@ void read_write(struct _atecc608_config config)
     }
     
     fprintf(stdout, "Readed data: ");
-    print_hex(read_data, 32);*/
+    print_hex_to_file(read_data, 32, stdout);*/
 
     /* Compare the read data to the written data *
     fprintf(stdout, "Verifing read data matches written data:\n");
@@ -241,9 +241,8 @@ int main(int argc, char **argv)
 		if (optopt == 'n')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    return -1;
 		}
-		break;
+		return -2;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
@@ -281,7 +280,7 @@ int main(int argc, char **argv)
     }
 
     fprintf(stdout, "Data read from slot %d: ", slot);
-    print_hex(read_data, READ_SIZE);
+    print_hex_to_file(read_data, READ_SIZE, stdout);
 	
     /* Release the global ATCADevice instance */
     status = atcab_release();

@@ -36,6 +36,6 @@ config: common.h
 	$(CC) $(CFLAGS) config.c common.c -o config -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/
 
 clean:
-	rm -f test info config read_write asymmetric symmetric sign_verify pbkdf2 generate_hash random
+	rm -f info config read_write asymmetric symmetric sign_verify pbkdf2 generate_hash random
 	rm -f *.o
 	rm -rf dec.txt enc.txt

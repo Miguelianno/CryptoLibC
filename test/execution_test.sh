@@ -2,192 +2,200 @@
 
 # Testing read_write program
 # Wrong input
-result=$(./../read_write -n -1)
-if [ $result -eq 0 ]; then
+./read_write -n -1 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo "Error: result not expected trying wrong input"
+    exit -1
+fi
+
+# Wrong input
+./read_write -n 2 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Parameter not recognised
-result=$(./../read_write -n -1 -f error)
-if [ $result -ne -2 ]; then
+./read_write -n -1 -f error > /dev/null 2>&1
+if [ $? -ne 254 ]; then
     echo "Error: result not expected a not recognised parameter"
     exit -1
 fi
 
 # Correct execution
-result=$(./../read_write -n 2)
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./read_write -n 8 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 1"
     exit -1
 fi
 
 # Testing generate_hash program
 # Wrong input
-result=$(./../generate_hash -f non_existing_file.txt)
-if [ $result -eq 0 ]; then
+./generate_hash -f non_existing_file.txt > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Parameter not recognised
-result=$(./../generate_hash -n -1)
-if [ $result -ne -2 ]; then
+./generate_hash -n -1 > /dev/null 2>&1
+if [ $? -ne 254 ]; then
     echo "Error: result with a not expected a not recognised parameter"
     exit -1
 fi
 
 # Correct execution
-result=$(./../generate_hash -f test.txt)
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./generate_hash -f test.txt > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 2"
     exit -1
 fi
 
 # Correct execution
-result=$(./../generate_hash -t "Generating hash of current text")
-if [ $result -ne 0 ]; then
+./generate_hash -t "Generating hash of current text" > /dev/null 2>&1
+if [ $? -ne 0 ]; then
     echo "Error: result with a not expected trying correct input"
     exit -1
 fi
 
 # Testing asymmetric program
 # Wrong input
-result=$(./../asymmetric -f non_existing_file.txt)
-if [ $result -eq 0 ]; then
+./asymmetric -f non_existing_file.txt > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Parameter not recognised
-result=$(./../asymmetric -n -1)
-if [ $result -ne -2 ]; then
+./asymmetric -n -1 > /dev/null 2>&1
+if [ $? -ne 254 ]; then
     echo "Error: result not expected with a not recognised parameter"
     exit -1
 fi
 
 # Correct execution
-result=$(./../asymmetric -f test.txt)
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./asymmetric -f test.txt > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 10"
     exit -1
 fi
 
 # Correct execution
-result=$(./../asymmetric -t "trying new input to encrypt")
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./asymmetric -t "trying new input to encrypt" > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 3"
     exit -1
 fi
 
 # Testing symmetric program
 # Wrong input
-result=$(./../symmetric -f non_existing_file.txt)
-if [ $result -eq 0 ]; then
+./symmetric -f non_existing_file.txt > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Parameter not recognised
-result=$(./../symmetric -n -1)
-if [ $result -ne -2 ]; then
-    echo "Error: result not expected with a not recognised parameter"
+./symmetric -n -1 > /dev/null 2>&1
+if [ $? -ne 254 ]; then
+    echo "Error: result not expected with a not recognised parameter 3"
     exit -1
 fi
 
 # Can't use additional authenticated data on modes different to ccm or gcm
-result=$(./../symmetric -t "trying new input to encrypt" -m cbc -a test2.txt)
-if [ $result -ne -1 ]; then
-    echo "Error: result not expected trying correct input"
+./symmetric -t "trying new input to encrypt" -m cbc -a test2.txt > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 4"
     exit -1
 fi
 
 # Correct execution
-result=$(./../symmetric -f test.txt)
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./symmetric -f test.txt -m aes> /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 11"
     exit -1
 fi
 
-result=$(./../symmetric -t "trying new input to encrypt")
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./symmetric -t "trying new input to encrypt" -m cmac > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 5"
     exit -1
 fi
 
-result=$(./../symmetric -t "trying new input to encrypt" -m ccm -d "Trying additional authenticated data")
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./symmetric -t "trying new input to encrypt" -m ccm -d "Trying additional authenticated data" > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 299"
     exit -1
 fi
 
-result=$(./../symmetric -t "trying new input to encrypt" -m gcm -d "Trying additional authenticated data")
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./symmetric -t "trying new input to encrypt" -m gcm -d "Trying additional authenticated data" > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 7"
     exit -1
 fi
+
 # Testing pbkdf2 program
 # Wrong input
-result=$(./../pbkdf2 -i 500 -n 3 -o 8)
-if [ $result -eq 0 ]; then
+./pbkdf2 -i 500 -n 3 -o 8 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Wrong input
-result=$(./../pbkdf2 -i 1000 -n 10 -o 3)
-if [ $result -eq 0 ]; then
-    echo "Error: result not expected trying wrong input"
+./pbkdf2 -i 1000 -n 10 -o 3 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo "Error: result not expected trying wrong input 8"
     exit -1
 fi
 
 # Wrong input
-result=$(./../pbkdf2 -i 1000 -n 2 -o 6)
-if [ $result -eq 0 ]; then
+./pbkdf2 -i 1000 -n 2 -o 6 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Parameter not recognised
-result=$(./../pbkdf2 -i 1000 -n 2 -o 8 -f fail.txt)
-if [ $result -ne -2 ]; then
-    echo "Error: result not expected with a not recognised parameter"
+./pbkdf2 -i 1000 -n 2 -o 8 -f fail.txt > /dev/null 2>&1
+if [ $? -ne 254 ]; then
+    echo "Error: result not expected with a not recognised parameter 2"
     exit -1
 fi
 
 # Correct execution
-result=$(./../pbkdf2 -i 1000 -n 7 -o 12)
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./pbkdf2 -i 1000 -n 9 -o 12 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 9"
     exit -1
 fi
 
 # Testing sign_verify program
 # Wrong input
-result=$(./../sign_verify -f non_existing_file.txt -n 2)
-if [ $result -eq 0 ]; then
+./sign_verify -f non_existing_file.txt -n 2 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Wrong input
-result=$(./../sign_verify -f test.txt -n 7)
-if [ $result -eq 0 ]; then
+./sign_verify -f test.txt -n 7 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
     echo "Error: result not expected trying wrong input"
     exit -1
 fi
 
 # Parameter not recognised
-result=$(./../sign_verify -f test.txt -i 1000 -n 2)
-if [ $result -ne -2 ]; then
-    echo "Error: result not expected with a not recognised parameter"
+./sign_verify -f test.txt -i 1000 -n 2 > /dev/null 2>&1
+if [ $? -ne 254 ]; then
+    echo "Error: result not expected with a not recognised parameter 1"
     exit -1
 fi
 
 # Correct execution
-result=$(./../sign_verify -f test.txt -n 2)
-if [ $result -ne 0 ]; then
-    echo "Error: result not expected trying correct input"
+./sign_verify -f test.txt -n 2 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: result not expected trying correct input 11"
     exit -1
 fi
 

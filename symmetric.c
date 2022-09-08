@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     }
 
     fprintf(stdout, "Generated data:\n");
-    print_hex(random_data, 16);
+    print_hex_to_file(random_data, 16, stdout);
 
     while ((c = getopt (argc, argv, "f:m:t:a:d:h::")) != -1)
     {
@@ -105,9 +105,8 @@ int main(int argc, char** argv)
 		if (optopt == 'f' || optopt == 'm' || optopt == 't' || optopt == 'd' || optopt == 'a')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    return -1;
 		}
-		break;
+		return -2;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
@@ -331,7 +330,6 @@ int main(int argc, char** argv)
     else if (strcmp(mode, "aes") == 0)
     {
         fprintf(stdout, "Encrypting with AES-128\n");
-
 	if (aes_encryption(filename, text, 5) == -1)
 	{
 	    fprintf(stderr, "Error in ctr encryption\n");

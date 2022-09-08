@@ -31,7 +31,7 @@ int main (int argc, char** argv)
     fprintf(stdout, "Decimal format: %d\n", rand_out);
 
     fprintf(stdout, "Hexadecimal format: ");
-    print_hex(rand_out, NUMBER_SIZE);
+    print_hex_to_file(rand_out, NUMBER_SIZE, stdout);
 
     return 0;
 }

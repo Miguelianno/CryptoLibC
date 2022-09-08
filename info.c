@@ -142,7 +142,7 @@ void main()
     }
   
     fprintf(stdout, "Revision: ");
-    print_hex(revision, REVISION_SIZE);
+    print_hex_to_file(revision, REVISION_SIZE, stdout);
 
     /* Returns the serial number of the device */
     status = atcab_read_serial_number(serial_number);
@@ -153,7 +153,7 @@ void main()
     }
  
     fprintf(stdout, "Serial Number: ");
-    print_hex(serial_number, SERIAL_NUMBER_SIZE);
+    print_hex_to_file(serial_number, SERIAL_NUMBER_SIZE, stdout);
 
     /* Gets the size of the specified zone in bytes */
     status = atcab_get_zone_size(ATCA_ZONE_CONFIG, 0, &zone_size);
@@ -204,7 +204,7 @@ void main()
 
 
     fprintf(stdout, "Config zone: ");
-    print_hex(config_data, CONFIG_SIZE);
+    print_hex_to_file(config_data, CONFIG_SIZE, stdout);
 
     /* Reads the configuration zone to see if its locked */
     status = atcab_is_locked(LOCK_ZONE_CONFIG, &is_locked);

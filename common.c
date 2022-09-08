@@ -52,7 +52,6 @@ int char_to_uint8(char* str, uint8_t* res, int size)
 int uint8_to_char(uint8_t* data, char* res, int size)
 {
     int i = 0;
-    char* res;
 	
     if (size <= 0 || data == NULL)
     {
@@ -83,7 +82,7 @@ ATCA_STATUS generate_nonce(uint8_t* rand_out)
     status = atcab_random(num_in);
     if (status != ATCA_SUCCESS)
     {
-	fprintf(stderr, "Error generating random number\n");
+	fprintf(stderr, "Error generating random number: %x\n", status);
         return status;
     }
 
@@ -174,7 +173,7 @@ uint32_t set_32_field(uint8_t* data, int index)
 
     if (data == NULL || index < 0)
     {
-        return -1;
+        return 0;
     }
 
     while (shift >= 0)
@@ -199,7 +198,7 @@ uint16_t set_16_field(uint8_t* data, int index)
 
     if (data == NULL || index < 0)
     {
-        return -1;
+        return 0;
     }
     
     while (shift >= 0)
@@ -351,7 +350,7 @@ int read_hex_from_file(FILE* fp, uint8_t* text)
 }
 
 /* Writes a number of bytes into a file */
-int print_hex_to_file(uint8_t* bin, size_t size, FILE* fp)
+int print_hex_to_file(uint8_t* bin, int size, FILE* fp)
 {
 
     if (fp == NULL || bin == NULL || size <= 0)
@@ -365,24 +364,6 @@ int print_hex_to_file(uint8_t* bin, size_t size, FILE* fp)
     }
  
     fprintf(fp, "\n");
-    return 1;
-}
-
-/* Prints a group of bytes in hexadecimal format */
-int print_hex(uint8_t* bin, size_t size)
-{
-
-    if (bin == NULL || size <= 0)
-    {
-        return -1;
-    }
-
-    for(int i=0; i < size; i++)
-    {
-        printf("%X ", bin[i]);
-    }
- 
-    printf("\n");
     return 1;
 }
 

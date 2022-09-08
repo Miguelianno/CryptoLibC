@@ -149,7 +149,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
         }
 
 	fprintf(stdout, "Premaster secret:\n");
-	print_hex(pms, 32);
+	print_hex_to_file(pms, 32, stdout);
 	
 	/* Performs and encrypted write of the premaster secret in the specified slot*/
         status = atcab_write_enc(ENCRYPTED, 0, pms, ENC_KEY, write_key_slot, rand_out);
@@ -161,7 +161,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
 	fprintf(stdout, "Write encrypted succesfully done!\n");
     }
 
-    return status
+    return status;
 }
 
 int main(int argc, char** argv)
@@ -203,9 +203,8 @@ int main(int argc, char** argv)
 		if (optopt == 'f' || optopt == 't')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    return -1;
 		}
-		break;
+		return -2;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
@@ -234,7 +233,7 @@ int main(int argc, char** argv)
     fprintf(stdout, "Generating secrets...\n");
     /* Generates the shared secret for encryption */
     status = ECDH(config);
-    if (status == ATCA_SUCCESS)
+    if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error in ecdh generation\n");
         return -1;

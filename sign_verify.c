@@ -111,9 +111,8 @@ int main(int argc, char** argv)
 		if (optopt == 'f' || optopt == 'n')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    return -1;
 		}
-		break;
+		return -2;
             default:
                 fprintf(stderr, "Parameter not recognised: %c\n", c);
                 fprintf(stderr, "Use argument -h for help\n");
@@ -144,7 +143,7 @@ int main(int argc, char** argv)
         digest_file = hash_file(fp);
 
         fprintf(stdout, "Message digest: ");
-        print_hex(digest_file, 32);
+        print_hex_to_file(digest_file, 32, stdout);
 		
         /* Calculates the public key from an existing private key in a slot */
         status = atcab_get_pubkey(slot, public_key);
@@ -163,7 +162,7 @@ int main(int argc, char** argv)
         }
 		
         fprintf(stdout, "Signature: ");
-        print_hex(file_signature, 32);
+        print_hex_to_file(file_signature, 32, stdout);
 		
         fprintf(stdout, "Verifying signature\n");
         /* Verifies the given signature with the specified public key */
@@ -194,7 +193,7 @@ int main(int argc, char** argv)
         }
 
 	fprintf(stdout, "Public key generated: ");
-	print_hex(pubkey, 64);
+	print_hex_to_file(pubkey, 64, stdout);
 
         /* Compute the SHA-256 digest of the public key */
         status = atcab_sha(DATA_SIZE, pubkey, digest_key);
@@ -205,7 +204,7 @@ int main(int argc, char** argv)
         }
 
 	fprintf(stdout, "Digest of the public key: ");
-	print_hex(digest_key, 32);
+	print_hex_to_file(digest_key, 32, stdout);
 
         /* Signs the digest of the public key generated previously with the key stored in slot 3 */
         status = atcab_sign(3, digest_key, key_signature);
@@ -216,7 +215,7 @@ int main(int argc, char** argv)
         }
 
 	fprintf(stdout, "Signature: ");
-	print_hex(key_signature, 32);
+	print_hex_to_file(key_signature, 32, stdout);
 
         /* Get the public key used for the sign operation */
         status = atcab_get_pubkey(3, public_key);
