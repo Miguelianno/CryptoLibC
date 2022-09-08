@@ -332,7 +332,7 @@ int main(int argc, char** argv)
         fprintf(stdout, "Encrypting with AES-128\n");
 	if (aes_encryption(filename, text, 5) == -1)
 	{
-	    fprintf(stderr, "Error in ctr encryption\n");
+	    fprintf(stderr, "Error in aes encryption\n");
 	    return -1;
 	}
 

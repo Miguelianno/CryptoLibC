@@ -2,8 +2,15 @@ SHELL = /bin/sh
 CC = gcc
 CFLAG = -WALL -g
 
-test:
-	$(CC) $(CFLAGS) -o test -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/
+
+install:
+	# 1º Git clone en el directorio deseado
+	# /usr/lib/ -> crypaotuhlib.so
+	# /usr/include/cryptoauthlib/ -> github repository 
+	# 2º cd lib/
+	# 3º cmake CMakeLists.txt
+	# 4º make
+	# 5º sudo mv libcryptoauth.so /usr/lib
 
 info: common.h
 	$(CC) $(CFLAGS) info.c common.c -o info -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/

@@ -230,7 +230,8 @@ int aes_encryption(char* filename, char* text, int slot)
 	        }	    
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -243,8 +244,8 @@ int aes_encryption(char* filename, char* text, int slot)
 	            return -1;
 	        }
 	        print_hex_to_file(out, ENC_SIZE, fo);
-                i +=16;
-	        aux += 16;
+                i += 15;
+	        aux += 15;
 	    }
 	}
     }
@@ -480,7 +481,8 @@ int cbc_encryption(char* filename, char* text, int slot, int auth_mode, struct a
 	        }	    
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -494,8 +496,8 @@ int cbc_encryption(char* filename, char* text, int slot, int auth_mode, struct a
 	        }
 	    
 		print_hex_to_file(out, ENC_SIZE, fo);
-                i +=16;
-	        aux += 16;
+                i +=15;
+	        aux += 15;
 	    }
 	}
     }
@@ -587,7 +589,8 @@ int cmac_encryption(char* filename, char* text, int slot, int auth_mode, struct 
 	        }	    
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -609,8 +612,8 @@ int cmac_encryption(char* filename, char* text, int slot, int auth_mode, struct 
                     return -1;
 	        }
             
-	        i +=16;
-	        aux += 16;
+	        i +=15;
+	        aux += 15;
 	    }
 	}
     }
@@ -716,7 +719,8 @@ int cbcmac_encryption(char* filename, char* text, int slot, int auth_mode, struc
 	        }	    
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -729,8 +733,8 @@ int cbcmac_encryption(char* filename, char* text, int slot, int auth_mode, struc
 	            return -1;
 	        }
 	        print_hex_to_file(out, ENC_SIZE, fo);
-                i +=16;
-	        aux += 16;
+                i +=15;
+	        aux += 15;
 	    }
 	}
     }
@@ -1073,7 +1077,8 @@ int ctr_encryption(char* filename, char* text, struct atca_aes_ctr_ctx ctx)
 	        }	    
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -1086,8 +1091,8 @@ int ctr_encryption(char* filename, char* text, struct atca_aes_ctr_ctx ctx)
 	            return -1;
 	        }
 	        print_hex_to_file(out, ENC_SIZE, fo);
-                i +=16;
-	        aux += 16;
+                i +=15;
+	        aux += 15;
 
 	        status = atcab_aes_ctr_increment(&ctx);
  	        if (status != ATCA_SUCCESS)
@@ -1190,6 +1195,7 @@ int ccm_encryption(char* filename, char* text, struct atca_aes_ccm_ctx ctx, uint
     char* aux;
     uint8_t out[ENC_SIZE];
     ATCA_STATUS status;
+    
 
     if (filename == NULL && text == NULL)
     {
@@ -1288,7 +1294,8 @@ int ccm_encryption(char* filename, char* text, struct atca_aes_ccm_ctx ctx, uint
 	        }	      
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -1301,8 +1308,8 @@ int ccm_encryption(char* filename, char* text, struct atca_aes_ccm_ctx ctx, uint
 	            return -1;
 	       }
 	       print_hex_to_file(out, ENC_SIZE, fo);
-               i +=16;
-	       aux += 16;
+               i +=15;
+	       aux += 15;
 	    }
 	}
     }
@@ -1569,7 +1576,8 @@ int gcm_encryption(char* filename, char* text, struct atca_aes_gcm_ctx ctx, uint
 	        }	    
 	        else
 	        {
-	            strncpy(str, aux, ENC_SIZE);
+	            strncpy(str, aux, ENC_SIZE-1);
+		    str[ENC_SIZE-1] = 0;
 	        }
 
     	        /* Encrypt a block of data using CBC mode and a key within the device */
@@ -1582,8 +1590,8 @@ int gcm_encryption(char* filename, char* text, struct atca_aes_gcm_ctx ctx, uint
 	            return -1;
 	        }
 	        print_hex_to_file(out, ENC_SIZE, fo);
-                i +=16;
-	        aux += 16;
+                i +=15;
+	        aux += 15;
 	    }
 	}
     }
