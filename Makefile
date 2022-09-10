@@ -2,15 +2,14 @@ SHELL = /bin/sh
 CC = gcc
 CFLAG = -WALL -g
 
+help: 
+	echo "Commands: "
+	echo "make help -----> Gives you information about the different usable commands"
+	echo "make all -----> Compiles all programs"
+	echo "make <program> -----> Compiles the specified program"
+	echo "make clean -----> Deletes the executable programs and temporary encryption files"
 
-install:
-	# 1º Git clone en el directorio deseado
-	# /usr/lib/ -> crypaotuhlib.so
-	# /usr/include/cryptoauthlib/ -> github repository 
-	# 2º cd lib/
-	# 3º cmake CMakeLists.txt
-	# 4º make
-	# 5º sudo mv libcryptoauth.so /usr/lib
+all: info random read_write pbkdf2 generate_hash symmetric asymmetric sign_verify config
 
 info: common.h
 	$(CC) $(CFLAGS) info.c common.c -o info -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/
@@ -36,13 +35,9 @@ asymmetric: common.h crypto_common.h
 sign_verify: common.h crypto_common.h
 	$(CC) $(CFLAGS) sign_verify.c common.c crypto_common.c -o sign_verify -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/
 
-common: common.h
-	$(CC) $(CFLAGS) -o common -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/
-
 config: common.h
 	$(CC) $(CFLAGS) config.c common.c -o config -L/usr/lib/ -lcryptoauth -I/usr/include/cryptoauthlib/
 
 clean:
 	rm -f info config read_write asymmetric symmetric sign_verify pbkdf2 generate_hash random
-	rm -f *.o
 	rm -rf dec.txt enc.txt
