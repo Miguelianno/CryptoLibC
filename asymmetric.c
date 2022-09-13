@@ -4,6 +4,7 @@
 
 #define FILENAME_SIZE 25
 #define BUFFER_SIZE 500
+
 uint8_t ENC_KEY[32] = {
     0x37, 0x80, 0xe6, 0x3d, 0x49, 0x68, 0xad, 0xe5,
     0xd8, 0x22, 0xc0, 0x13, 0xfc, 0xc3, 0x23, 0x84,
@@ -14,12 +15,13 @@ uint8_t ENC_KEY[32] = {
 /* Help function for the usage of the program */ 
 void help(char *program)
 {
-    fprintf (stdout, " This program performs asymmetric encryption by generating a shared secret");
-    fprintf (stdout, " Usage %s -f filename -t text [OPTIONS]\n", program);
+    fprintf (stdout, " This program performs asymmetric encryption by generating a shared secret and encrypts the given information only one thing can be encrypted at a time, output is stored in a new file called dec.txt\n");
+    fprintf (stdout, " Usage %s [OPTIONS]\n", program);
     fprintf (stdout, "  -h help\t\tDisplays the help menu\n");
     fprintf (stdout, "  -f filename\t\tIndicates the filename of the program\n");
     fprintf (stdout, "  -t text\t\tPlain text you want to encrypt\n");
-    fprintf (stdout, " Usage example: ./asymmetric.c -f example.txt\n");
+    fprintf (stdout, " Usage example: ./asymmetric -f example.txt\n");
+
     exit (2);
 }
 
@@ -48,12 +50,12 @@ uint16_t get_read_key_slot(struct _atecc608_config config)
 ATCA_STATUS ECDH(struct _atecc608_config config)
 {
     ATCA_STATUS status;
-    uint8_t puba[64];
-    uint8_t pubb[64];
-    uint8_t pms[32];
-    uint8_t secret[32];
-    uint8_t rand_out[32];
-    uint8_t response[4];
+    uint8_t puba[ATCA_PUB_KEY_SIZE];
+    uint8_t pubb[ATCA_PUB_KEY_SIZE];
+    uint8_t pms[ATCA_KEY_SIZE];
+    uint8_t secret[ATCA_KEY_SIZE];
+    uint8_t rand_out[OUTNONCE_SIZE];
+    uint8_t response[ATCA_RSP_SIZE_MIN];
 
     uint16_t write_key_slot;
     uint32_t i;
@@ -101,7 +103,7 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
     }
     else
     {
-        fprintf(stdout, "Error in calculation\n");
+        fprintf(stdout, "Error, secrets don't match\n");
 	return status;
     }
 
@@ -164,27 +166,21 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
     return status;
 }
 
+/* Main program */
 int main(int argc, char** argv)
 {
     ATCA_STATUS status;
-    uint8_t config_data[CONFIG_SIZE];
+    uint8_t config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
-    uint8_t nonce[32];
-    int c;
-    int ret;
+    uint8_t nonce[OUTNONCE_SIZE];
+    int c, ret;
     char text[BUFFER_SIZE] = "\0";
     char filename[FILENAME_SIZE]= "\0";
-
+    int text_flag = 0, file_flag = 0;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
 
     gCfg->atcai2c.bus=1;
 
-    if (argc <= 1)
-    {
-        fprintf(stderr, "Error in arguments, use -h argument for help\n");
-	exit(-1);
-    }
-    
     while ((c = getopt (argc, argv, "f:t:h::")) != -1)
     {
         switch (c)
@@ -194,9 +190,11 @@ int main(int argc, char** argv)
                 break;
 	    case 'f':
 		strcpy(filename, optarg);
+		file_flag = 1;
 		break;
 	    case 't':
 		strcpy(text, optarg);
+		text_flag = 1;
 		break;
 	    case '?':
 		/* Check unkwnown options */
@@ -210,6 +208,12 @@ int main(int argc, char** argv)
                 fprintf(stderr, "Use argument -h for help\n");
 		return -2;
 	}
+    }
+
+    if ((file_flag && text_flag) || (file_flag == 0 && text_flag == 0))
+    {
+        fprintf(stderr, "Error with arguments, check -h for help\n");
+	return -2;
     }
 
     /* Creates a global ATCADevice object used by Basic API */
@@ -242,7 +246,7 @@ int main(int argc, char** argv)
     /* Performs aes encryption with the shared secret on the file/text given */
     if (aes_encryption(filename, text, 5) == -1)
     {
-	fprintf(stderr, "Error in ctr encryption\n");
+	fprintf(stderr, "Error in aes encryption\n");
 	return -1;
     }
 

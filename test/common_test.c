@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     FILE* fp;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
 
-    fp = fopen("test.txt", "r+");
+    fp = fopen("hex_test.txt", "r+");
     if (fp == NULL)
     {
         fprintf(stderr, "Can't open file for testing\n");

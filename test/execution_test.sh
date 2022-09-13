@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Executing tests..."
+
 # Testing read_write program
 # Wrong input
 ./read_write -n -1 > /dev/null 2>&1
@@ -11,21 +13,21 @@ fi
 # Wrong input
 ./read_write -n 2 > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo "Error: result not expected trying wrong input"
+    echo "Error: result not expected trying wrong input "
     exit -1
 fi
 
 # Parameter not recognised
 ./read_write -n -1 -f error > /dev/null 2>&1
 if [ $? -ne 254 ]; then
-    echo "Error: result not expected a not recognised parameter"
+    echo "Error: Parameter not recognised"
     exit -1
 fi
 
 # Correct execution
 ./read_write -n 8 > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "Error: result not expected trying correct input 1"
+    echo "Error: result not expected trying correct input"
     exit -1
 fi
 
@@ -33,7 +35,7 @@ fi
 # Wrong input
 ./generate_hash -f non_existing_file.txt > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo "Error: result not expected trying wrong input"
+    echo "Error: result not expected trying wrong input2"
     exit -1
 fi
 
@@ -47,7 +49,7 @@ fi
 # Correct execution
 ./generate_hash -f test.txt > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "Error: result not expected trying correct input 2"
+    echo "Error: result not expected trying correct input "
     exit -1
 fi
 
@@ -62,7 +64,7 @@ fi
 # Wrong input
 ./asymmetric -f non_existing_file.txt > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo "Error: result not expected trying wrong input"
+    echo "Error: result not expected trying wrong input2"
     exit -1
 fi
 
@@ -76,14 +78,14 @@ fi
 # Correct execution
 ./asymmetric -f test.txt > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "Error: result not expected trying correct input 10"
+    echo "Error: result not expected trying correct input"
     exit -1
 fi
 
 # Correct execution
 ./asymmetric -t "trying new input to encrypt" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "Error: result not expected trying correct input 3"
+    echo "Error: result not expected trying correct input"
     exit -1
 fi
 
@@ -91,7 +93,7 @@ fi
 # Wrong input
 ./symmetric -f non_existing_file.txt > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo "Error: result not expected trying wrong input"
+    echo "Error: result not expected trying wrong input 3"
     exit -1
 fi
 
@@ -110,7 +112,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Correct execution
-./symmetric -f test.txt -m aes> /dev/null 2>&1
+./symmetric -f test.txt -m aes > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "Error: result not expected trying correct input 11"
     exit -1
@@ -193,7 +195,7 @@ if [ $? -ne 254 ]; then
 fi
 
 # Correct execution
-./sign_verify -f test.txt -n 2 > /dev/null 2>&1
+./sign_verify -f test.txt > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "Error: result not expected trying correct input 11"
     exit -1

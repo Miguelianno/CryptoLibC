@@ -82,7 +82,7 @@ ATCA_STATUS generate_nonce(uint8_t* rand_out)
     status = atcab_random(num_in);
     if (status != ATCA_SUCCESS)
     {
-	fprintf(stderr, "Error generating random number: %x\n", status);
+	fprintf(stderr, "Error generating random number\n");
         return status;
     }
 

@@ -1,7 +1,5 @@
 #include "common.h"
 
-#define SERIAL_NUMBER_SIZE 9
-#define REVISION_SIZE 4
 
 /* Prints information about the interface used for the connection between the Raspberry and the cryptoprocessor */
 void print_iface_configuration(ATCAIfaceCfg *conf)
@@ -14,7 +12,7 @@ void print_iface_configuration(ATCAIfaceCfg *conf)
     fprintf(stdout, "Baud: %d, ", conf->atcai2c.baud);
     fprintf(stdout, "Wake delay: %d, ", conf->wake_delay);
     fprintf(stdout, "Rx retries: %d\n", conf->rx_retries);
-    fprintf(stdout, "----------------------------------------\n");
+    fprintf(stdout, "--------------------------------------------------\n");
 
 }
 
@@ -66,13 +64,13 @@ void print_device_type(ATCADeviceType dev_type)
 void main()
 {
     ATCA_STATUS status;
-    uint8_t serial_number[SERIAL_NUMBER_SIZE];
-    uint8_t revision[REVISION_SIZE];
+    uint8_t serial_number[ATCA_SERIAL_NUM_SIZE];
+    uint8_t revision[ATCA_WORD_SIZE];
     ATCADeviceType dev_type;
-    uint8_t config_data[CONFIG_SIZE];
+    uint8_t config_data[ATCA_ECC_CONFIG_SIZE];
     ATCADevice* dev; 
     bool is_locked, is_dev, state;
-    char version[9];
+    char version[ATCA_SERIAL_NUM_SIZE];
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
     int slot;
     size_t zone_size;
@@ -142,7 +140,7 @@ void main()
     }
   
     fprintf(stdout, "Revision: ");
-    print_hex_to_file(revision, REVISION_SIZE, stdout);
+    print_hex_to_file(revision, ATCA_SERIAL_NUM_SIZE, stdout);
 
     /* Returns the serial number of the device */
     status = atcab_read_serial_number(serial_number);
@@ -153,8 +151,9 @@ void main()
     }
  
     fprintf(stdout, "Serial Number: ");
-    print_hex_to_file(serial_number, SERIAL_NUMBER_SIZE, stdout);
+    print_hex_to_file(serial_number, ATCA_SERIAL_NUM_SIZE, stdout);
 
+    fprintf(stdout, "--------------------------------------------------\n");
     /* Gets the size of the specified zone in bytes */
     status = atcab_get_zone_size(ATCA_ZONE_CONFIG, 0, &zone_size);
     if (status != ATCA_SUCCESS)
@@ -194,6 +193,7 @@ void main()
     }
     (state) ? fprintf(stdout, "Persistent latch state is set\n"): fprintf(stdout, "Persistent latch state is clear\n");
 
+    fprintf(stdout, "--------------------------------------------------\n");
     /* Reads the complete device configuration zone */
     status = atcab_read_config_zone(config_data);
     if (status != ATCA_SUCCESS)
@@ -204,7 +204,7 @@ void main()
 
 
     fprintf(stdout, "Config zone: ");
-    print_hex_to_file(config_data, CONFIG_SIZE, stdout);
+    print_hex_to_file(config_data, ATCA_ECC_CONFIG_SIZE, stdout);
 
     /* Reads the configuration zone to see if its locked */
     status = atcab_is_locked(LOCK_ZONE_CONFIG, &is_locked);

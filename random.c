@@ -1,12 +1,11 @@
 #include "common.h"
 
-#define NUMBER_SIZE 32
 
 /* This program generates random numbers and displays them in decimal/hexadecimal format */
 int main (int argc, char** argv)
 {
     ATCA_STATUS status;
-    uint8_t rand_out[NUMBER_SIZE];
+    uint8_t rand_out[OUTNONCE_SIZE];
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
 
     gCfg->atcai2c.bus=1;
@@ -27,11 +26,11 @@ int main (int argc, char** argv)
 	return -1;
     }
 
-    fprintf(stdout, "Random number generated succesfully!");
+    fprintf(stdout, "Random number generated succesfully!\n");
     fprintf(stdout, "Decimal format: %d\n", rand_out);
 
     fprintf(stdout, "Hexadecimal format: ");
-    print_hex_to_file(rand_out, NUMBER_SIZE, stdout);
+    print_hex_to_file(rand_out, OUTNONCE_SIZE, stdout);
 
     return 0;
 }

@@ -23,19 +23,18 @@ void help(char *program)
 }
 
 /* Reads/writes information from/to the specified slot */
-void read_write(struct _atecc608_config config)
+int read_write(struct _atecc608_config config)
 {
     ATCA_STATUS status;
     uint16_t write_key_slot;
-    uint8_t write_data[32];
-    uint8_t read_data[32];
-    uint8_t rand_out[32];
-    uint8_t ciphertext[16];
-    uint8_t puba[64];
-    uint8_t response[4];
+    uint8_t write_data[OUTNONCE_SIZE];
+    uint8_t read_data[READ_SIZE];
+    uint8_t rand_out[OUTNONCE_SIZE];
+    uint8_t ciphertext[ENC_SIZE];
+    uint8_t puba[ATCA_PUB_KEY_SIZE];
+    uint8_t response[ATCA_WORD_SIZE];
     int slot = 5;
-
-    uint8_t num_in[32];
+    uint8_t num_in[OUTNONCE_SIZE];
 	
     /* Obtener 4 bits the WriteKey (Servirá para validar y escribir datos encriptados) */
     write_key_slot = config.SlotConfig[ENCRYPTED];
@@ -47,7 +46,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating random number\n");
-        exit(-1);
+        return -1;
     }
 	
     fprintf(stdout, "Data to be written: \n");
@@ -58,7 +57,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error writing bytes to the device\n", status);
-	exit(-1);
+	return -1;
     }
     fprintf(stdout, "Write Success\n");
 
@@ -67,7 +66,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading bytes from device\n");
-	exit(-1);
+	return -1;
     }
 
     fprintf(stdout, "Read Success\n");
@@ -90,7 +89,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error reading bytes from device\n");
-	exit(-1);
+	return -1;
     }
 
     /* Generates a private key in TempKey 
@@ -111,7 +110,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error encrypting data: %x\n", status);
-	exit(-1);
+	return -1;
     }
 
     /* Performs AES-128 operation with a key in the device */
@@ -119,7 +118,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error encrypting data: %x\n", status);
-	exit(-1);
+	return -1;
     }
 
     /* Generates random nonce */
@@ -130,7 +129,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error generating nonce: %x\n", status);
-        exit(-1);
+        return -1;
     }
 
     /* Performs a SHA256 on the source data with the content in TempKey */
@@ -138,7 +137,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error in gendig: %x\n", status);
-        exit(-1);
+        return -1;
     }
 
     /* Performs and encrypted write of the premaster secret in the specified slot */
@@ -146,7 +145,7 @@ void read_write(struct _atecc608_config config)
     if (status != ATCA_SUCCESS)
     {
         fprintf(stderr, "Error writing the secret: %x\n", status);
-        exit(-1);
+        return -1;
     }
 
     fprintf(stdout, "Write encrypted succesfully done!\n");
@@ -205,26 +204,20 @@ void read_write(struct _atecc608_config config)
         fprintf(stdout, "Data does not match\n");
     }*/
 		
-    return;
+    return 0;
 }
 
-
+/* Main program */
 int main(int argc, char **argv)
 {
     ATCA_STATUS status;
     bool conf_is_locked;
     bool data_is_locked;
-    char config_data[CONFIG_SIZE];
+    char config_data[ATCA_ECC_CONFIG_SIZE];
     char read_data[READ_SIZE];
     struct _atecc608_config config;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
-    int c, slot;
-
-    if (argc < 2)
-    {
-        fprintf(stderr, "Please specify a slot to read from\n");
-	return -1;
-    }
+    int c, slot, slot_flag = 0;
 
     while ((c = getopt (argc, argv, "n:h::")) != -1)
     {
@@ -235,6 +228,7 @@ int main(int argc, char **argv)
                 break;
 	    case 'n':
 		slot = atoi(optarg);
+		slot_flag = 1;
 		break;
 	    case '?':
 		/* Check unkwnown options */
@@ -248,6 +242,12 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Use argument -h for help\n");
 		return -2;
 	}
+    }
+
+    if (slot_flag == 0)
+    {
+        fprintf(stderr, "Error in arguments, check -h for help\n");
+	return -2;
     }
 
     gCfg->atcai2c.bus=1;

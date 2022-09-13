@@ -2,18 +2,15 @@
 #include "crypto_common.h"
 #include <unistd.h>
 
-#define SIGNATURE_SIZE 32
-#define MESSAGE_SIZE 32
-#define DATA_SIZE 64
-
 /* Help function for the usage of the program */ 
 void help(char *program)
 {
-    fprintf (stdout, " This program allows you to cryptographically sign a document or a public key using a key stored in the device\n");
+    fprintf (stdout, " This program allows you to cryptographically sign a document or a public key using a key stored in the device (one element per execution)\n");
     fprintf (stdout, " Usage %s -f filename\n", program);
     fprintf (stdout, "  -h help\t\tDisplays the help menu\n");
     fprintf (stdout, "  -f filename\t\tIndicates the filename of the document you want to sign\n");
-    fprintf (stdout, "  -n slot number\t\tIndicates the slot number of which public key will be signed (2, 3, 4)\n");
+    fprintf (stdout, "  -n slot number\tIndicates the slot number of which public key will be signed (2, 3, 4)\n");
+    fprintf (stdout, "Example: ./sign_verify -f test.txt\n");
 
     exit (2);
 }
@@ -24,7 +21,7 @@ uint8_t* sign_device(uint8_t *digest, int slot)
     uint8_t *signature;
     ATCA_STATUS status;
 	
-    signature = (uint8_t*)malloc(SIGNATURE_SIZE*sizeof(uint8_t));
+    signature = (uint8_t*)malloc(ATCA_SIG_SIZE*sizeof(uint8_t));
     if (signature == NULL)
     { 
         fprintf(stderr, "Error allocating memory for signature\n");
@@ -35,7 +32,7 @@ uint8_t* sign_device(uint8_t *digest, int slot)
     status = atcab_sign(slot, digest, signature);
     if (status != ATCA_SUCCESS)
     {
-        fprintf(stderr, "Error signing\n");
+        fprintf(stderr, "Error signing message\n");
 	return NULL;
     }
 
@@ -62,29 +59,23 @@ bool verify_device(uint8_t *message, uint8_t *signature, uint8_t *public_key)
 int main(int argc, char** argv)
 {
     ATCA_STATUS status;
-    char config_data[CONFIG_SIZE];
+    char config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
-    uint8_t public_key[64];
+    uint8_t public_key[ATCA_PUB_KEY_SIZE];
     int slot = 2; // Slot 2, 3 and 4 stores usable public keys
     int sign_slot = -1;
-    uint8_t message[32];
+    uint8_t message[ATCA_SHA_DIGEST_SIZE];
     uint8_t *digest_file;
     bool verified;
     uint8_t *file_signature;
-    uint8_t key_signature[SIGNATURE_SIZE];
-    uint8_t intern_sign[DATA_SIZE], pubkey[DATA_SIZE];
+    uint8_t key_signature[ATCA_SIG_SIZE];
+    uint8_t intern_sign[SHA_DATA_MAX], pubkey[ATCA_PUB_KEY_SIZE];
     bool is_verified;
     FILE* fp = NULL;
-    char *msg[MESSAGE_SIZE];
-    uint8_t digest_key[MESSAGE_SIZE];
-    int c;
+    char *msg[SHA_DATA_MAX];
+    uint8_t digest_key[SHA_DATA_MAX];
+    int c, file_flag = 0, slot_flag = 0;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
-
-    if(argc < 2)
-    {
-        fprintf(stderr, "You need to specify at least a filename to sign or a slot number, use -h argument for help\n");
-	return -1;
-    }
 
     gCfg->atcai2c.bus=1;
 
@@ -102,9 +93,11 @@ int main(int argc, char** argv)
     	            fprintf(stderr, "Error opening file %s\n", optarg);
     	            return -1;
                 }
+		file_flag = 1;
 		break;
             case 'n':
 		sign_slot = atoi(optarg);
+		slot_flag = 1;
 		break;
 	    case '?':
 		/* Check unkwnown options */
@@ -120,6 +113,11 @@ int main(int argc, char** argv)
 	}
     }
 
+    if ((slot_flag == 0 && file_flag == 0) || (slot_flag && file_flag))
+    {
+        fprintf(stderr, "Error in arguments, check -h for help\n");
+	return -2;
+    }
     /* Creates a global ATCADevice object used by Basic API */
     status = atcab_init(gCfg);
     if (status != ATCA_SUCCESS)
@@ -128,7 +126,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    if (fp != NULL)
+    if (file_flag)
     {
         fprintf(stdout, "Signing file...\n");
         /* Initializes SHA-256 calculation engine */
@@ -143,7 +141,7 @@ int main(int argc, char** argv)
         digest_file = hash_file(fp);
 
         fprintf(stdout, "Message digest: ");
-        print_hex_to_file(digest_file, 32, stdout);
+        print_hex_to_file(digest_file, ATCA_SHA_DIGEST_SIZE, stdout);
 		
         /* Calculates the public key from an existing private key in a slot */
         status = atcab_get_pubkey(slot, public_key);
@@ -162,7 +160,7 @@ int main(int argc, char** argv)
         }
 		
         fprintf(stdout, "Signature: ");
-        print_hex_to_file(file_signature, 32, stdout);
+        print_hex_to_file(file_signature, ATCA_SIG_SIZE, stdout);
 		
         fprintf(stdout, "Verifying signature\n");
         /* Verifies the given signature with the specified public key */
@@ -179,8 +177,7 @@ int main(int argc, char** argv)
 	free(file_signature);
         free(digest_file);
     }
-
-    if (sign_slot != -1)
+    else
     {
         fprintf(stdout, "Generating and signing key in slot %d\n", sign_slot);
         
@@ -193,10 +190,10 @@ int main(int argc, char** argv)
         }
 
 	fprintf(stdout, "Public key generated: ");
-	print_hex_to_file(pubkey, 64, stdout);
+	print_hex_to_file(pubkey, ATCA_PUB_KEY_SIZE, stdout);
 
         /* Compute the SHA-256 digest of the public key */
-        status = atcab_sha(DATA_SIZE, pubkey, digest_key);
+        status = atcab_sha(SHA_DATA_MAX, pubkey, digest_key);
         if (status != ATCA_SUCCESS)
         {
             fprintf(stderr, "Error generating digest of the public key\n");
@@ -204,7 +201,7 @@ int main(int argc, char** argv)
         }
 
 	fprintf(stdout, "Digest of the public key: ");
-	print_hex_to_file(digest_key, 32, stdout);
+	print_hex_to_file(digest_key, ATCA_SHA_DIGEST_SIZE, stdout);
 
         /* Signs the digest of the public key generated previously with the key stored in slot 3 */
         status = atcab_sign(3, digest_key, key_signature);
@@ -215,7 +212,7 @@ int main(int argc, char** argv)
         }
 
 	fprintf(stdout, "Signature: ");
-	print_hex_to_file(key_signature, 32, stdout);
+	print_hex_to_file(key_signature, ATCA_SIG_SIZE, stdout);
 
         /* Get the public key used for the sign operation */
         status = atcab_get_pubkey(3, public_key);
@@ -233,7 +230,7 @@ int main(int argc, char** argv)
 	    return -1;
         }
     
-        (is_verified) ? fprintf(stdout, "Public key verified succesfully!\n"): fprintf(stdout, "The public key couldn't be verified\n");
+        (is_verified) ? fprintf(stdout, "Public key verificated succesfully!\n"): fprintf(stdout, "The public key couldn't be verified\n");
     }
 
     /* Release the global ATCADevice instance */

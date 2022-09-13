@@ -9,8 +9,8 @@
 /* Help function for the usage of the program */ 
 void help(char *program)
 {
-    fprintf (stdout, " This program generates a hash of a given message using SHA2\n");
-    fprintf (stdout, " Usage %s -f filename -t text [OPTIONS]\n", program);
+    fprintf (stdout, " This program generates a hash of a given message or file using SHA2\n");
+    fprintf (stdout, " Usage %s [OPTIONS]\n", program);
     fprintf (stdout, "  -h help\t\tDisplays the help menu\n");
     fprintf (stdout, "  -f filename\t\tName of the file whose content will be used for generating the digest\n");
     fprintf (stdout, "  -t text\t\tText to process for generating the digest\n");
@@ -19,17 +19,18 @@ void help(char *program)
     exit (2);
 }
 
+/* Main program */
 int main(int argc, char** argv)
 {
     ATCA_STATUS status;
-    char config_data[CONFIG_SIZE];
+    char config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
-    int c; 
+    int c, text_flag = 0, file_flag = 0; 
     char text[BUFFER_SIZE] = "\0";
     char filename[FILENAME_SIZE] = "\0";
     char *file_digest;
-    char text_digest[DIGEST_SIZE];
+    char text_digest[ATCA_SHA_DIGEST_SIZE];
     FILE *fp = NULL;
 
     while ((c = getopt (argc, argv, "f:t:h::")) != -1)
@@ -41,16 +42,17 @@ int main(int argc, char** argv)
                 break;
 	    case 'f':
                 strcpy(filename, optarg);
+		file_flag = 1;
 		break;
 	    case 't':
 		strcpy(text, optarg);
+		text_flag = 1;
 		break;
 	    case '?':
 		/* Check unkwnown options */
 		if (optopt == 'f' || optopt == 't')
 		{
                     fprintf(stderr, "Option -%c requires an argument\n", optopt);
-		    return -1;
 		}
 		return -2;
             default:
@@ -60,11 +62,10 @@ int main(int argc, char** argv)
 	}
     }
 
-    printf("HOLA\n");
-    if (argc < 2)
+    if ((text_flag && file_flag) || (text_flag == 0 && file_flag == 0) )
     {
-        fprintf(stderr, "You need to include at least one argument, check -h argument for help\n");
-	return -1;
+        fprintf(stderr, "You need to include the text or file to generate the digest, check -h for help\n");
+	return -2;
     }
 
     gCfg->atcai2c.bus=1;
@@ -87,7 +88,7 @@ int main(int argc, char** argv)
 	
     config = set_configuration(config_data);
 	
-    if (strcmp(filename, "\0"))
+    if (file_flag)
     {
         fp = fopen(filename, "r");
         if (fp == NULL)
@@ -114,13 +115,12 @@ int main(int argc, char** argv)
 	}
 	
         fprintf(stdout, "The result hash of the file is: ");
-	print_hex_to_file(file_digest, 32, stdout);
+	print_hex_to_file(file_digest, ATCA_SHA_DIGEST_SIZE, stdout);
 
         free(file_digest);
 	fclose(fp);
     }
-
-    if (strcmp(text, "\0"))
+    else
     {
 	/* Compute a SHA-256 digest of the given text */
         status = atcab_sha(strlen(text), text, text_digest);
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 	}
 
         fprintf(stdout, "The result hash of the given text is: ");
-	print_hex_to_file(text_digest, 32, stdout);
+	print_hex_to_file(text_digest, ATCA_SHA_DIGEST_SIZE, stdout);
     }
 	
 

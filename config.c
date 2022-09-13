@@ -7,16 +7,10 @@ void generate_key(struct _atecc608_config config)
     ATCA_STATUS status;
     bool is_private;
     bool data_is_locked, is_locked;
-    uint8_t public_key[64];
+    uint8_t public_key[ATCA_PUB_KEY_SIZE];
 	
     for(i=0; i < N_SLOTS; i++)
     {
-        /*if(! ((config.KeyConfig[i] >> 8) & 1))
-	{
-	    fprintf(stdout, "Not a private key 1\n");
-	    //continue;
-	}*/
-
 	/* Checks wheter the key is private or not */
 	status = atcab_is_private(i, &is_private);
 	if (status != ATCA_SUCCESS)
@@ -80,17 +74,16 @@ void generate_key(struct _atecc608_config config)
 	    exit(status);
         }
 
-        // fprintf(stdout, "Public Key: ");
     } 	
 }
 
-
+/* Main program */
 int main()
 {
     ATCA_STATUS status;
     bool conf_is_locked;
     bool data_is_locked;
-    char config_data[CONFIG_SIZE];
+    char config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
     uint8_t* final_config;
@@ -115,7 +108,7 @@ int main()
 	
     config = set_configuration(config_data);
 	
-    fprintf(stdout, "Reading the lock Status");
+    fprintf(stdout, "Reading the lock Status:\n");
 
     /* Checks whether the specified zone is locked or not */
     status = atcab_is_locked(LOCK_ZONE_CONFIG, &conf_is_locked);
@@ -138,6 +131,7 @@ int main()
     (data_is_locked)? printf("Data zone blocked\n"): printf("Data zone unlocked\n");
 
     if (!conf_is_locked){
+	fprintf(stdout, "Locking configuration zone\n");
 	/* Unconditionally locks the config zone (no CRC) */
         status = atcab_lock_config_zone();
         if (status != ATCA_SUCCESS)
@@ -145,12 +139,13 @@ int main()
             fprintf(stdout, "Error locking config zone\n");
 	    exit(status);
 	}
+        fprintf(stdout, "Configuration zone succesfully locked\n");
     }
 	
-    fprintf(stdout, "Configuration zone succesfully locked\n");
     /* Checks if data zone is locked */
     if (!data_is_locked)
     {
+	fprintf(stdout, "Locking data zone\n");
         generate_key(config);
 	/* Unconditionally locks the data and OTP zones (no CRC)  */
 	status = atcab_lock_data_zone();
@@ -159,16 +154,13 @@ int main()
             fprintf(stderr, "Error bloqueando zona de datos\n");
             exit(status);
 	}
-    }
-    else
-    {
-        fprintf(stdout, "Data zone already active\n");
+        fprintf(stdout, "Data zone succesfully locked\n");
     }
 	
     /* Generate new Keys */
     if (data_is_locked)
     {
-        fprintf(stdout, "Generating new Keys\n");
+        fprintf(stdout, "Generating new keys...\n");
         generate_key(config);	    
     }	
 	

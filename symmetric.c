@@ -9,8 +9,8 @@
 /* Help function for the usage of the program */ 
 void help(char *program)
 {
-    fprintf (stdout, " This program performs aes encryption in different modes (cbc, cbcmac, ccm, cmac, ctr and gcm)\n");
-    fprintf (stdout, " Usage %s -o operation -m mode -a additional authenticated data [OPTIONS]\n", program);
+    fprintf (stdout, " This program performs aes encryption in different modes (cbc, cbcmac, ccm, cmac, ctr and gcm), you can encrypt either data or text\n");
+    fprintf (stdout, " Usage %s [OPTIONS]\n", program);
     fprintf (stdout, "  -h help\t\tDisplays the help menu\n");
     fprintf (stdout, "  -f filename\t\tIndicates the filename of the program\n");
     fprintf (stdout, "  -t text\t\tPlain text you want to encrypt\n");
@@ -18,6 +18,7 @@ void help(char *program)
     fprintf (stdout, "  -a additional authenticated data\t\tAdds additional authenticated data contained in a file (only used for ccm and gcm modes)\n");
     fprintf (stdout, "  -d additional authenticated data\t\tAdds additional authenticated data as a plain text (only used for ccm and gcm modes)\n");
     fprintf (stdout, " Usage example: ./symmetric -f example.txt -m cbc\n");
+    fprintf (stdout, " Usage example: ./symmetric -f example.txt -m ccm -d \"Additional authenticated data\"\n");
 
     exit (2);
 }
@@ -27,13 +28,12 @@ int main(int argc, char** argv)
 {
     ATCA_STATUS status;
     struct atca_aes_cbc_ctx ctx; // atca_aes_cbc_ctx_t
-    uint8_t random_data[16];
-    uint8_t aes_out[16];
-    uint8_t plaintext[16];
-    uint8_t config_data[CONFIG_SIZE];
+    uint8_t aes_out[AES_DATA_SIZE];
+    uint8_t plaintext[AES_DATA_SIZE];
+    uint8_t config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
     int c;
-    int op_flag;
+    int op_flag = 0, text_flag = 0, file_flag = 0;
     char filename[FILENAME_SIZE] = "\0";
     char filename2[FILENAME_SIZE] = "\0";
     char mode[MODE_SIZE];
@@ -61,17 +61,6 @@ int main(int argc, char** argv)
     
     config = set_configuration(config_data);
     
-    /* Generates a 32 byte random number from the device */
-    status = atcab_random(random_data);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error generating random number\n");
-        return -1;
-    }
-
-    fprintf(stdout, "Generated data:\n");
-    print_hex_to_file(random_data, 16, stdout);
-
     while ((c = getopt (argc, argv, "f:m:t:a:d:h::")) != -1)
     {
         switch (c)
@@ -83,14 +72,17 @@ int main(int argc, char** argv)
             case 'f':
                 fprintf(stdout, "Case f (filename): %s\n", optarg);
                 strcpy(filename, optarg);
+		file_flag = 1;
                 break;
             case 'm':
                 fprintf(stdout, "Case m (mode): %s\n", optarg);
 		strcpy(mode, optarg);
+		op_flag = 1;
                 break;
             case 't':
                 fprintf(stdout, "Case t (text): %s\n", optarg);
 		strcpy(text, optarg);
+		text_flag = 1;
 		break;
             case 'd':
                 fprintf(stdout, "Case d (aad): %s\n", optarg);
@@ -114,10 +106,16 @@ int main(int argc, char** argv)
         }
     }
 
+    if ((text_flag == 0 && file_flag == 0) || (text_flag && file_flag) || !op_flag)
+    {
+        fprintf(stderr, "Error in arguments, check -h for help\n");
+	return -2;
+    }
+
     if (strcmp (mode, "cbc") == 0)
     {
         struct atca_aes_cbc_ctx ctx;
-	uint8_t iv[32];
+	uint8_t iv[OUTNONCE_SIZE];
 
 	/* Generates a 32 byte random number from the device */            
        	status = atcab_random(iv);
@@ -152,7 +150,7 @@ int main(int argc, char** argv)
     else if (strcmp (mode, "cbcmac") == 0)
     {
 	struct atca_aes_cbc_ctx ctx;
-	uint8_t iv[32];
+	uint8_t iv[OUTNONCE_SIZE];
 
 	/* Generates a 32 byte random number from the device */
 	status = atcab_random(iv);
@@ -187,7 +185,7 @@ int main(int argc, char** argv)
     else if (strcmp (mode, "cmac") == 0)
     {
 	struct atca_aes_cbc_ctx ctx;
-	uint8_t iv[32];
+	uint8_t iv[OUTNONCE_SIZE];
 
 	/* Generates a 32 byte random number from the device */
 	status = atcab_random(iv);
@@ -222,8 +220,8 @@ int main(int argc, char** argv)
     else if (strcmp (mode, "ccm") == 0)
     {
         struct atca_aes_ccm_ctx ccm_ctx;
-	uint8_t iv[32];
-	uint8_t tag[16];
+	uint8_t iv[OUTNONCE_SIZE];
+	uint8_t tag[AES_DATA_SIZE];
 	uint8_t tag_size;
 
 	fprintf(stdout, "Ccm encryption mode...\n");
@@ -237,7 +235,7 @@ int main(int argc, char** argv)
 	}
             
 	/* Initialize context for AES CCM operation with a random nonce */
-	status = atcab_aes_ccm_init(&ccm_ctx, 5, 0, iv, 12, 16, 16, 16);
+	status = atcab_aes_ccm_init(&ccm_ctx, 5, 0, iv, 12, AES_DATA_SIZE, AES_DATA_SIZE, AES_DATA_SIZE);
 	if (status != ATCA_SUCCESS)
 	{
 	    fprintf(stderr, "Error initializing ccm encryption mode: %x!\n", status);
@@ -259,8 +257,8 @@ int main(int argc, char** argv)
     else if (strcmp (mode, "gcm") == 0)
     {
         struct atca_aes_gcm_ctx gcm_ctx;
-	uint8_t iv[32];
-	uint8_t tag[16];
+	uint8_t iv[OUTNONCE_SIZE];
+	uint8_t tag[AES_DATA_SIZE];
 	uint8_t tag_size;
             
 	fprintf(stdout, "Gcm encryption mode...\n");
@@ -274,7 +272,7 @@ int main(int argc, char** argv)
 	}
    
 	/* Initialize context for AES GCM operation with an existing IV */
-	status = atcab_aes_gcm_init(&gcm_ctx, 5, 0, iv, 32);
+	status = atcab_aes_gcm_init(&gcm_ctx, 5, 0, iv, OUTNONCE_SIZE);
 	if (status != ATCA_SUCCESS)
 	{
 	    fprintf(stderr, "Error initializing gcm encryption mode\n");
@@ -296,7 +294,7 @@ int main(int argc, char** argv)
     else if (strcmp (mode, "ctr") == 0)
     {
         struct atca_aes_ctr_ctx ctr_ctx;
-	uint8_t iv[32];
+	uint8_t iv[OUTNONCE_SIZE];
             
 	fprintf(stdout, "Ctr encryption mode...\n");
 	/* Generates a 32 byte random number from the device */

@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     // Auxiliar variables
     FILE* fpn = NULL;
     FILE* fp;
+    FILE* fp2;
     char filename[TEST_SMALL_SIZE] = "test.txt";
     char filename2[TEST_SMALL_SIZE] = "test2.txt";
     char text[TEST_MEDIUM_SIZE] = "random data for operations and testing";
@@ -37,7 +38,14 @@ int main(int argc, char** argv)
     fp = fopen(filename, "r+");
     if (fp == NULL)
     {
-        fprintf(stderr, "Can't open file for testing\n");
+        fprintf(stderr, "Can't open file %s\n", filename);
+        return -1;
+    }
+
+    fp2 = fopen(filename2, "r+");
+    if (fp2 == NULL)
+    {
+        fprintf(stderr, "Can't open file %s\n", filename2);
         return -1;
     }
 
@@ -202,6 +210,9 @@ int main(int argc, char** argv)
         fprintf(stderr, "Error releasing global ATCA Device\n");
         return -1;
     }
+
+    fclose(fp);
+    fclose(fp2);
 
     return 0;
 }
