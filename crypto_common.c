@@ -266,167 +266,10 @@ int aes_encryption(char* filename, char* text, int slot)
     return 0;
 }
 
-// VER SI BORRAR COMENTADO
-
-/*int decrypt_file(char* filename, uint16_t slot){
-	FILE* fi;
-	FILE* fo;
-	uint8_t str[ENC_SIZE];
-	ATCA_STATUS status;
-	char out[ENC_SIZE];
-	char* out_file = "dec.txt";
-	
-	fi = fopen(filename, "r");
-	if (fi == NULL)
-	{
-		printf("File %s does not exist\n", filename);
-		return -1;
-	}
-	
-	fo = fopen(out_file, "w");
-	if (fo == NULL)
-	{
-		printf("File %s does not exist\n", out_file);
-		return -1;
-	}
-	
-	while (fgets(str, ENC_SIZE, fi) != NULL)
-	{
-		status = atcab_aes_decrypt (slot, 0, str, out);
-		if (status != ATCA_SUCCESS)
-		{
-			printf("Error encrypting\n");
-			fclose(fp);
-			fclose(fi);
-			return -1;
-		}
-		fputs(out, fo);
-	}
-	
-	fclose(fp);
-	fclose(fi);
-	return 0;
-}
-
-
-int encrypt_file(char* filename, uint16_t slot){
-	FILE* fi;
-	FILE* fo;
-	uint8_t str[ENC_SIZE];
-	ATCA_STATUS status;
-	char out[ENC_SIZE];
-	char* out_file = "enc.txt";
-	
-	fi = fopen(filename, "r");
-	if (fi == NULL)
-	{
-		printf("File %s does not exist\n", filename);
-		return -1;
-	}
-	
-	fo = fopen(out_file, "w");
-	if (fo == NULL)
-	{
-		printf("File %s does not exist\n", out_file);
-		return -1;
-	}
-	
-	while (fgets(str, ENC_SIZE, fi) != NULL)
-	{
-		status = atcab_aes_encrypt (slot, 0, str, out);
-		if (status != ATCA_SUCCESS)
-		{
-			printf("Error encrypting\n");
-			fclose(fp);
-			fclose(fi);
-			return -1;
-		}
-		fputs(out, fo);
-	}
-	
-	fclose(fp);
-	fclose(fi);
-	return 0;
-}
-*/
-
-// VER BORRAR?
-/* Performs a cbcmac operation using the key of the specified slot */
-uint8_t* cbcmac(struct atca_aes_cbc_ctx ctx, int slot, uint8_t* data, int step, struct atca_aes_cbcmac_ctx cbcmac_ctx){
-    ATCA_STATUS status;
-    uint8_t *mac = NULL;
-
-    /* Initialize context for AES CBC-MAC operation */
-    status = atcab_aes_cbcmac_init(&cbcmac_ctx, slot, 0);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error initializing cbcmac operation: %x\n", status);
-        return NULL;
-    }
-	
-	/* Calculate AES CBC-MAC with key stored within ECC608A device */
-    status = atcab_aes_cbcmac_update(&cbcmac_ctx, data, 15);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error updating cbcmac operation\n");
-        return NULL;
-    }
-
-	/* Finish a CBC-MAC operation returning the CBC-MAC value */
-    status = atcab_aes_cbcmac_finish(&cbcmac_ctx, mac, ENC_SIZE);
-    if (status != ATCA_SUCCESS)
-    {
-         fprintf(stderr, "Error finishing cbcmac operation: %x\n", status);
-	 return NULL;
-    }
-
-    return mac;
-}
-
-// VER BORRAR?
-/* Performs a cmac operation using the key of the specified slot */
-uint8_t* cmac(struct atca_aes_cbc_ctx ctx, int slot, uint8_t* data, int step){
-    struct atca_aes_cmac_ctx cmac_ctx;
-    ATCA_STATUS status;
-    uint8_t *cmac = NULL;
-
-    if (step == 1)
-    {
-    	/* Initialize a CMAC calculation using an AES-128 key in the device */
-        status = atcab_aes_cmac_init(&cmac_ctx, slot, 0);
-	    if (status != ATCA_SUCCESS)
-	    {
-	        fprintf(stderr, "Error initializing cmac operation\n");
-	        return NULL;
-	    }
-    }
-    else if (step == 2)
-    {
-        /* Add data to an initialized CMAC calculation */
-        status = atcab_aes_cmac_update(&cmac_ctx, data, ENC_SIZE);
-        if (status != ATCA_SUCCESS)
-        {
-	    fprintf(stderr, "Error updating cmac operation\n");
-	    return NULL;
-	}
-    }
-    else
-    {
-    	/* Finish a CMAC operation returning the CMAC value */
-        status = atcab_aes_cmac_finish(&cmac_ctx, cmac, ENC_SIZE);
-	    if (status != ATCA_SUCCESS)
-	    {
-	        fprintf(stderr, "Error initializing cmac operation\n");
-	        return NULL;
-	    }
-    }
-
-    return cmac;
-}
 
 // VER borrar auth mode??
 /* Performs a cbc encryption of the data specified in filename */
-int cbc_encryption(char* filename, char* text, int slot, int auth_mode, struct atca_aes_cbc_ctx ctx)
+int cbc_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx)
 {
     struct atca_aes_cbcmac_ctx cbcmac_ctx;
     FILE* fi = NULL;
@@ -527,7 +370,7 @@ int cbc_encryption(char* filename, char* text, int slot, int auth_mode, struct a
 
 
 /* Performs a cbc encryption of the data specified in filename */
-int cmac_encryption(char* filename, char* text, int slot, int auth_mode, struct atca_aes_cbc_ctx ctx) {
+int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx) {
     FILE* fi = NULL;
     FILE* fo = NULL;
     uint8_t str[ENC_SIZE];
@@ -662,7 +505,7 @@ int cmac_encryption(char* filename, char* text, int slot, int auth_mode, struct 
 }
 
 /* Performs a cbc encryption of the data specified in filename */
-int cbcmac_encryption(char* filename, char* text, int slot, int auth_mode, struct atca_aes_cbc_ctx ctx) 
+int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx) 
 {
     struct atca_aes_cbcmac_ctx cbcmac_ctx;
     FILE* fi = NULL;
@@ -788,7 +631,7 @@ int cbcmac_encryption(char* filename, char* text, int slot, int auth_mode, struc
 }
 
 /* Performs a cbc decryption of the data specified in filename */
-int cbc_decryption(char* filename, int slot, int auth_mode, struct atca_aes_cbc_ctx ctx)
+int cbc_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 {
     struct atca_aes_cbcmac_ctx cbcmac_ctx;
     FILE* fi;
@@ -850,7 +693,7 @@ int cbc_decryption(char* filename, int slot, int auth_mode, struct atca_aes_cbc_
 }
 
 /* Performs a cbc decryption of the data specified in filename */
-int cmac_decryption(char* filename, int slot, int auth_mode, struct atca_aes_cbc_ctx ctx)
+int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 {
     FILE* fi;
     FILE* fo;
@@ -941,7 +784,7 @@ int cmac_decryption(char* filename, int slot, int auth_mode, struct atca_aes_cbc
 }
 
 /* Performs a cbc decryption of the data specified in filename */
-int cbcmac_decryption(char* filename, int slot, int auth_mode, struct atca_aes_cbc_ctx ctx)
+int cbcmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 {
     struct atca_aes_cbcmac_ctx cbcmac_ctx;
     FILE* fi;
@@ -1374,7 +1217,6 @@ int ccm_encryption(char* filename, char* text, struct atca_aes_ccm_ctx ctx, uint
     return 0;
 }
 
-// VER PROCESS aad on decryption??
 /* Performs a ccm decryption of the data specified in filename */
 int ccm_decryption(char* filename, struct atca_aes_ccm_ctx ctx, uint8_t* tag, char* filename2, char* aad)
 {
