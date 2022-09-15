@@ -266,8 +266,6 @@ int aes_encryption(char* filename, char* text, int slot)
     return 0;
 }
 
-
-// VER borrar auth mode??
 /* Performs a cbc encryption of the data specified in filename */
 int cbc_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx)
 {
@@ -1506,7 +1504,6 @@ int gcm_encryption(char* filename, char* text, struct atca_aes_gcm_ctx ctx, uint
     return 0;
 }
 
-// VER uso de aad en decryption??
 /* Performs a gcm decryption of the data specified in filename */
 int gcm_decryption(char* filename, struct atca_aes_gcm_ctx ctx, uint8_t* tag, char* filename2, char* aad)
 {
