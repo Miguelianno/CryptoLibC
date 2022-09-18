@@ -554,6 +554,7 @@ int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_
             }
 	     
 	    print_hex_to_file(out, ENC_SIZE, fo);
+		
 	    /* Add data to an initialized CMAC calculation */
 	    status = atcab_aes_cbcmac_update(&cbcmac_ctx, out, ENC_SIZE);
 	    if (status != ATCA_SUCCESS)
@@ -590,6 +591,15 @@ int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_
 	            return -1;
 	        }
 	        print_hex_to_file(out, ENC_SIZE, fo);
+		    
+		/* Add data to an initialized CMAC calculation */
+	        status = atcab_aes_cbcmac_update(&cbcmac_ctx, out, ENC_SIZE);
+	        if (status != ATCA_SUCCESS)
+	        {
+	            fprintf(stderr, "Error initializing cmac operation\n");
+                    return -1;
+	        }
+		    
                 i +=15;
 	        aux += 15;
 	    }
@@ -825,7 +835,6 @@ int cbcmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 
     while (read_hex_from_file(fi, str) != EOF)
     {
-	print_hex_to_file(str, ENC_SIZE, stdout);
         /* Calculate AES CBC-MAC with key stored within ECC608A device */
       	status = atcab_aes_cbcmac_update(&cbcmac_ctx, str, ENC_SIZE);
   	if (status != ATCA_SUCCESS)
@@ -843,17 +852,15 @@ int cbcmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 	    fclose(fi);
 	    return -1;
         }
-    }
-    ret = uint8_to_char(out, res, ENC_SIZE);
-    if (ret == -1)
-    {
-        fprintf(stderr, "Error converting from uint8 to char\n");
-	return -1;
-    }
-    fprintf(fo, "%s", res);
-
-    print_hex_to_file(str, ENC_SIZE, stdout);
     
+        ret = uint8_to_char(out, res, ENC_SIZE);
+        if (ret == -1)
+        {
+            fprintf(stderr, "Error converting from uint8 to char\n");
+	    return -1;
+        }
+        fprintf(fo, "%s", res);
+    }    
 
     /* Finish a CBC-MAC operation returning the CBC-MAC value */
     status = atcab_aes_cbcmac_finish(&cbcmac_ctx, mac, ENC_SIZE);
