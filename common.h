@@ -1,12 +1,10 @@
 #include "cryptoauthlib.h"
 
-
 #define CLEAR 8
 #define ENCRYPTED 5
 #define CONFIG_SIZE 128
 #define N_SLOTS 16
 #define ENC_SIZE 16
-
 
 ATCADevice getATCADevice();
 /* Returns the specified configuration */

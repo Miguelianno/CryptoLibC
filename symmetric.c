@@ -134,14 +134,14 @@ int main(int argc, char** argv)
 	}
                             
 	fprintf(stdout, "Trying cbc encryption\n");
-	if (cbc_encryption(filename, text, 5, 1, ctx) == -1)
+	if (cbc_encryption(filename, text, 5, ctx) == -1)
 	{
 	    fprintf(stderr, "Error in cbc encryption\n");
             return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
-	if (cbc_decryption("enc.txt", 5, 1, ctx) == -1)
+	if (cbc_decryption("enc.txt", 5, ctx) == -1)
 	{
 	    fprintf(stderr, "Error in cbc encryption\n");
 	    return -1;
@@ -169,14 +169,14 @@ int main(int argc, char** argv)
 	}
                             
 	fprintf(stdout, "Trying cbc encryption\n");
-	if (cbcmac_encryption(filename, text, 5, 1, ctx) == -1)
+	if (cbcmac_encryption(filename, text, 5, ctx) == -1)
 	{
 	    fprintf(stderr, "Error in cbc encryption\n");
 	    return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
-	if (cbcmac_decryption("enc.txt", 5, 1, ctx) == -1)
+	if (cbcmac_decryption("enc.txt", 5, ctx) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
 	    return -1;
@@ -204,14 +204,14 @@ int main(int argc, char** argv)
 	}
 
 	fprintf(stdout, "Trying cbc encryption\n");
-	if (cmac_encryption(filename, text, 5, 1, ctx) == -1)
+	if (cmac_encryption(filename, text, 5, ctx) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
 	    return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
-	if (cmac_decryption("enc.txt", 5, 1, ctx) == -1)
+	if (cmac_decryption("enc.txt", 5, ctx) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
 	    return -1;

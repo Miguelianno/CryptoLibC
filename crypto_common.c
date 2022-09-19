@@ -539,7 +539,7 @@ int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_
     }
 
     aux = text;
-    if (strcmp(filename, "\0"))
+    if (fi != NULL)
     { 
         while (fgets(str, ENC_SIZE, fi) != NULL)
         {
@@ -559,7 +559,7 @@ int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_
 	    status = atcab_aes_cbcmac_update(&cbcmac_ctx, out, ENC_SIZE);
 	    if (status != ATCA_SUCCESS)
 	    {
-	        fprintf(stderr, "Error initializing cmac operation\n");
+	        fprintf(stderr, "Error updating cbcmac operation\n");
                 return -1;
 	    }
 	}
@@ -596,7 +596,7 @@ int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_
 	        status = atcab_aes_cbcmac_update(&cbcmac_ctx, out, ENC_SIZE);
 	        if (status != ATCA_SUCCESS)
 	        {
-	            fprintf(stderr, "Error initializing cmac operation\n");
+	            fprintf(stderr, "Error updating cbcmac operation\n");
                     return -1;
 	        }
 		    
@@ -825,11 +825,12 @@ int cbcmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 	return -1;
     }
 
+    printf("ALO\n");
     /* Initialize context for AES CBC-MAC operation */
     status = atcab_aes_cbcmac_init(&cbcmac_ctx, slot, 0);
     if (status != ATCA_SUCCESS)
     {
-        fprintf(stderr, "Error initializing cbcmac operation1: %x\n", status);
+        fprintf(stderr, "Error initializing cbcmac operation\n");
 	return -1;
     }
 
@@ -839,6 +840,7 @@ int cbcmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
       	status = atcab_aes_cbcmac_update(&cbcmac_ctx, str, ENC_SIZE);
   	if (status != ATCA_SUCCESS)
 	{
+		printf("AQUI:\n");
 	    fprintf(stderr, "Error updating cbcmac operation: %x\n", status);
             return -1;
 	}
