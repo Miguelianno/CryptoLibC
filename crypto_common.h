@@ -28,6 +28,6 @@ int cbcmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_
 /* Performs a cbcmac decryption of the data specified in filename */
 int cbcmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx);
 /* Performs a cmac decryption of the data specified in filename */
-int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx);
+int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx, uint8_t* mac);
 /* Performs a cmac decryption of the data specified in filename */
-int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx);
+int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx, uint8_t* mac);

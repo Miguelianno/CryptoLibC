@@ -368,7 +368,7 @@ int cbc_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx
 
 
 /* Performs a cbc encryption of the data specified in filename */
-int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx) {
+int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ctx ctx, uint8_t* mac) {
     FILE* fi = NULL;
     FILE* fo = NULL;
     uint8_t str[ENC_SIZE];
@@ -376,7 +376,6 @@ int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ct
     char out[ENC_SIZE];
     char* aux;
     char* out_file = "enc.txt";
-    uint8_t mac[ENC_SIZE];
     int i = 0, text_size;
     struct atca_aes_cmac_ctx cmac_ctx;
 
@@ -490,8 +489,11 @@ int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ct
     if (mac == NULL)
     {
         fprintf(stderr, "Error in mac operation\n");
-	    return -1;
+	return -1;
     }
+
+    fprintf(stdout, "MAC generated during cmac encryption: ");
+    print_hex_to_file(mac, ENC_SIZE, stdout);
 
     fclose(fo);
     if (fi != NULL)
@@ -701,7 +703,7 @@ int cbc_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
 }
 
 /* Performs a cbc decryption of the data specified in filename */
-int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
+int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx, uint8_t* mac)
 {
     FILE* fi;
     FILE* fo;
@@ -709,7 +711,6 @@ int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
     ATCA_STATUS status;
     char out[ENC_SIZE];
     char* out_file = "dec.txt";
-    uint8_t mac[ENC_SIZE];
     char res[ENC_SIZE];
     int ret;
     struct atca_aes_cmac_ctx cmac_ctx;
@@ -784,6 +785,9 @@ int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx)
         fprintf(stderr, "Error in mac operation\n");
 	return -1;
     }
+
+    fprintf(stdout, "MAC generated during cmac decryption: ");
+    print_hex_to_file(mac, ENC_SIZE, stdout);
 
     fclose(fo);
     fclose(fi);

@@ -186,6 +186,8 @@ int main(int argc, char** argv)
     {
 	struct atca_aes_cbc_ctx ctx;
 	uint8_t iv[OUTNONCE_SIZE];
+	uint8_t enc_tag[ENC_SIZE];
+	uint8_t dec_tag[ENC_SIZE];
 
 	/* Generates a 32 byte random number from the device */
 	status = atcab_random(iv);
@@ -204,16 +206,27 @@ int main(int argc, char** argv)
 	}
 
 	fprintf(stdout, "Trying cbc encryption\n");
-	if (cmac_encryption(filename, text, 5, ctx) == -1)
+	if (cmac_encryption(filename, text, 5, ctx, enc_tag) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
 	    return -1;
 	}
 
 	fprintf(stdout, "Trying cbc decryption\n");
-	if (cmac_decryption("enc.txt", 5, ctx) == -1)
+	if (cmac_decryption("enc.txt", 5, ctx, dec_tag) == -1)
 	{
             fprintf(stderr, "Error in cbc encryption\n");
+	    return -1;
+	}
+
+	if (memcmp(enc_tag, dec_tag, ENC_SIZE) == 0)
+	{
+	    fprintf(stdout, "Tag verification succesfully done!\n");
+	    return -1;
+	}
+	else
+	{
+	    fprintf(stdout, "Error in tag verification, tags don't match!\n");
 	    return -1;
 	}
     }
