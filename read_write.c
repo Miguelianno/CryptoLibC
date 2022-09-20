@@ -279,8 +279,8 @@ int main(int argc, char **argv)
 	return -1;
     }
 
-    fprintf(stdout, "Data read from slot %d: ", slot);
-    print_hex_to_file(read_data, READ_SIZE, stdout);
+    /*fprintf(stdout, "Data read from slot %d: ", slot);
+    print_hex_to_file(read_data, READ_SIZE, stdout);*/
 	
     /* Release the global ATCADevice instance */
     status = atcab_release();
