@@ -56,12 +56,14 @@ int main(int argc, char** argv)
 	fclose(fp);
 	return -1;
     }
+
     t_fin = clock();
 
     fprintf(stdout, "Digest generated: ");
     print_hex_to_file(file_digest, 32, stdout);
     
 
+    secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
     printf("%.16g milisegundos\n", secs * 1000.0);
 
     free(file_digest);
