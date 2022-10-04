@@ -30,7 +30,6 @@ int main(int argc, char** argv)
     struct atca_aes_cbc_ctx ctx; // atca_aes_cbc_ctx_t
     uint8_t aes_out[AES_DATA_SIZE];
     uint8_t plaintext[AES_DATA_SIZE];
-    uint8_t config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
     int c;
     int op_flag = 0, text_flag = 0, file_flag = 0;
@@ -50,16 +49,6 @@ int main(int argc, char** argv)
         fprintf(stderr, "Error  initializing global ATCA Device\n");
         return -1;
     }
-    
-    /* Read the complete device configuration zone */
-    status = atcab_read_config_zone(config_data);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error reading config zone\n");
-        return -1;
-    }
-    
-    config = set_configuration(config_data);
     
     while ((c = getopt (argc, argv, "f:m:t:a:d:h::")) != -1)
     {
@@ -222,12 +211,10 @@ int main(int argc, char** argv)
 	if (memcmp(enc_tag, dec_tag, ENC_SIZE) == 0)
 	{
 	    fprintf(stdout, "Tag verification succesfully done!\n");
-	    return -1;
 	}
 	else
 	{
 	    fprintf(stdout, "Error in tag verification, tags don't match!\n");
-	    return -1;
 	}
     }
     else if (strcmp (mode, "ccm") == 0)
@@ -257,13 +244,13 @@ int main(int argc, char** argv)
 
 	if (ccm_encryption(filename, text, ccm_ctx, tag, &tag_size, filename2, aad) == -1)
 	{
-	    fprintf(stderr, "Error in ctr encryption\n");
+	    fprintf(stderr, "Error in ccm encryption\n");
 	    return -1;
 	}
 
 	if (ccm_decryption("enc.txt", ccm_ctx, tag, filename2, aad) == -1)
         {
-            fprintf(stderr, "Error in ctr encryption\n");
+            fprintf(stderr, "Error in ccm encryption\n");
 	    return -1;
 	}
     }

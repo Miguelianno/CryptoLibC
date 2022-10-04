@@ -492,9 +492,6 @@ int cmac_encryption(char* filename, char* text, int slot, struct atca_aes_cbc_ct
 	return -1;
     }
 
-    fprintf(stdout, "MAC generated during cmac encryption: ");
-    print_hex_to_file(mac, ENC_SIZE, stdout);
-
     fclose(fo);
     if (fi != NULL)
     {
@@ -785,9 +782,6 @@ int cmac_decryption(char* filename, int slot, struct atca_aes_cbc_ctx ctx, uint8
         fprintf(stderr, "Error in mac operation\n");
 	return -1;
     }
-
-    fprintf(stdout, "MAC generated during cmac decryption: ");
-    print_hex_to_file(mac, ENC_SIZE, stdout);
 
     fclose(fo);
     fclose(fi);

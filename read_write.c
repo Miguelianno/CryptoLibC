@@ -213,7 +213,6 @@ int main(int argc, char **argv)
     ATCA_STATUS status;
     bool conf_is_locked;
     bool data_is_locked;
-    char config_data[ATCA_ECC_CONFIG_SIZE];
     char read_data[READ_SIZE];
     struct _atecc608_config config;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
@@ -258,16 +257,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error initializing global ATCA Device\n");
         return -1;
     }
-	
-    /* Reads the complete device configuration zone */
-    status = atcab_read_config_zone(config_data);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error reading from the config zone\n");
-        return -1;
-    }
-	
-    config = set_configuration(config_data);
 	
     read_write(config);
 

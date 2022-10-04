@@ -23,8 +23,6 @@ void help(char *program)
 int main(int argc, char** argv)
 {
     ATCA_STATUS status;
-    char config_data[ATCA_ECC_CONFIG_SIZE];
-    struct _atecc608_config config;
     ATCAIfaceCfg *gCfg = &cfg_ateccx08a_i2c_default;
     int c, text_flag = 0, file_flag = 0; 
     char text[BUFFER_SIZE] = "\0";
@@ -77,16 +75,6 @@ int main(int argc, char** argv)
         fprintf(stderr, "Error initializing global ATCA Device\n");
         return -1;
     }
-	
-    /* Reads the complete device configuration zone */
-    status = atcab_read_config_zone(config_data);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Errorreading config zone\n");
-        return -1;
-    }
-	
-    config = set_configuration(config_data);
 	
     if (file_flag)
     {

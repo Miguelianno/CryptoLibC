@@ -9,7 +9,7 @@
 ATCADevice getATCADevice();
 /* Returns the specified configuration */
 uint8_t* get_defined_configuration();
-struct _atecc608_config set_configuration(uint8_t* config_data);
+struct _atecc608_config set_configuration();
 /* Converts a string of characters into an array of bytes */
 int char_to_uint8(char* str, uint8_t* res, int size);
 /* Writes a number of bytes into a file */

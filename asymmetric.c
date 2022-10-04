@@ -170,7 +170,6 @@ ATCA_STATUS ECDH(struct _atecc608_config config)
 int main(int argc, char** argv)
 {
     ATCA_STATUS status;
-    uint8_t config_data[ATCA_ECC_CONFIG_SIZE];
     struct _atecc608_config config;
     uint8_t nonce[OUTNONCE_SIZE];
     int c, ret;
@@ -224,15 +223,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    /* Reads the configuration zone of the device */
-    status = atcab_read_config_zone(config_data);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error reading config zone\n");
-        return -1;
-    }
-	
-    config = set_configuration(config_data);
+    config = set_configuration();
 	
     fprintf(stdout, "Generating secrets...\n");
     /* Generates the shared secret for encryption */

@@ -3,7 +3,7 @@
 /* Configuration for ATECC608A minus the first 16 bytes which are fixed by factory */
 uint8_t final_configuration[CONFIG_SIZE] = {
     0x01, 0x23, 0x89, 0xa6, 0x00, 0x00, 0x60, 0x02,  0x31, 0x5f, 0x94, 0x43, 0xee, 0x01, 0x51, 0x00,
-    0xC0, 0x00, 0x00, 0x01, 0x85, 0x00, 0x82, 0x00,  0x85, 0x20, 0x85, 0x20, 0x85, 0x20, 0x8f, 0x46,
+    0xC0, 0x00, 0x00, 0x01, 0x85, 0x00, 0x82, 0x00,  0x85, 0x20, 0x85, 0x20, 0x85, 0x20, 0xC6, 0x46,
     0x8F, 0x0F, 0x9F, 0x8F, 0x0F, 0x0F, 0x0F, 0x0F,  0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F,
     0x0D, 0x1F, 0x0F, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF,  0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xF7,  0x00, 0x69, 0x76, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -214,117 +214,129 @@ uint16_t set_16_field(uint8_t* data, int index)
 }
 
 /* This function fills the atecc608 config struct for an easier access to its values */
-struct _atecc608_config set_configuration(uint8_t* config_data)
+struct _atecc608_config set_configuration()
 {
     struct _atecc608_config config;
     int shift;
     int global = 0;
     ATCA_STATUS status;
+    bool is_locked;
 
-    /* Reads the complete device configuration zone */
-    status = atcab_read_config_zone(config_data);
+    /* Check wheter the configuration zone is locked or not*/
+    status = atcab_is_config_locked(&is_locked);
     if (status != ATCA_SUCCESS)
     {
-        fprintf(stderr, "Error reading config zone\n");
+        fprintf(stderr, "Error checking status of the configuration zone\n");
         exit(status);
     }
+
+    if (!is_locked)
+    {
+        /* Reads the complete device configuration zone */
+        status = atcab_write_config_zone(final_configuration);
+        if (status != ATCA_SUCCESS)
+        {
+            fprintf(stderr, "Error writing config zone\n");
+            exit(status);
+        }
+    }
 	
-    config.SN03 = set_32_field(config_data, global);
+    config.SN03 = set_32_field(final_configuration, global);
     global += 4;
 
-    config.RevNum = set_32_field(config_data, global);
+    config.RevNum = set_32_field(final_configuration,  global);
     global += 4;
 	
-    config.SN47 = set_32_field(config_data, global);
+    config.SN47 = set_32_field(final_configuration, global);
     global += 4;
 	
-    config.SN8 = config_data[global];
+    config.SN8 = final_configuration[global];
     global++;
 	
-    config.AES_Enable = config_data[global];
+    config.AES_Enable = final_configuration[global];
     global++;
 	
-    config.I2C_Enable = config_data[global];
+    config.I2C_Enable = final_configuration[global];
     global++;
 	
-    config.Reserved1 = config_data[global];
+    config.Reserved1 = final_configuration[global];
     global++;
 	
-    config.I2C_Address = config_data[global];
+    config.I2C_Address = final_configuration[global];
     global++;
 	
-    config.Reserved2 = config_data[global];
+    config.Reserved2 = final_configuration[global];
     global++;
 	
-    config.CountMatch = config_data[global];
+    config.CountMatch = final_configuration[global];
     global++;
 	
-    config.ChipMode = config_data[global];
+    config.ChipMode = final_configuration[global];
     global++;
 	
     for (int i = 0; i < N_SLOTS; i++)
     {
-        config.SlotConfig[i] = set_16_field(config_data, global);
+        config.SlotConfig[i] = set_16_field(final_configuration, global);
 	global +=2;
     }
 	
     for(int i = 0; i < 8; i++)
     {
-        config.Counter0[i] = config_data[global];
+        config.Counter0[i] = final_configuration[global];
 	global++;
     }
 	
     for(int i = 0; i < 8; i++)
     {
-        config.Counter1[i] = config_data[global];
+        config.Counter1[i] = final_configuration[global];
 	global++;
     }
 	
-    config.UseLock = config_data[global];
+    config.UseLock = final_configuration[global];
     global++;
 	
-    config.VolatileKeyPermission = config_data[global];
+    config.VolatileKeyPermission = final_configuration[global];
     global++;
 	
-    config.SecureBoot = set_16_field(config_data, global);
+    config.SecureBoot = set_16_field(final_configuration, global);
     global+=2;
 	
-    config.KdflvLoc = config_data[global];
+    config.KdflvLoc = final_configuration[global];
     global++;
 	
-    config.KdflvStr = set_16_field(config_data, global);
+    config.KdflvStr = set_16_field(final_configuration, global);
     global+=2;
 	
     for(int i = 0; i < 9; i++)
     {
-        config.Reserved3[i] = config_data[global];
+        config.Reserved3[i] = final_configuration[global];
 	global++;
     }  
 	
-    config.UserExtra = config_data[global];
+    config.UserExtra = final_configuration[global];
     global++;
 	
-    config.UserExtraAdd = config_data[global];
+    config.UserExtraAdd = final_configuration[global];
     global++;
 	
-    config.LockValue = config_data[global];
+    config.LockValue = final_configuration[global];
     global++;
 	
-    config.LockConfig = config_data[global];
+    config.LockConfig = final_configuration[global];
     global++;
 	
-    config.SlotLocked = set_16_field(config_data, global);
+    config.SlotLocked = set_16_field(final_configuration, global);
     global += 2;
 	
-    config.ChipOptions = set_16_field(config_data, global);
+    config.ChipOptions = set_16_field(final_configuration, global);
     global += 2;
 	
-    config.X509format = set_32_field(config_data, global);
+    config.X509format = set_32_field(final_configuration, global);
     global += 4;
 	
     for (int i = 0; i < N_SLOTS; i++)
     {
-        config.KeyConfig[i] = set_16_field(config_data, global);
+        config.KeyConfig[i] = set_16_field(final_configuration, global);
 	global +=2;
     }
 		

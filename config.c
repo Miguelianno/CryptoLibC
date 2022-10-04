@@ -98,15 +98,7 @@ int main()
         exit(status);
     }
 	
-    /* Reads the complete device configuration zone */
-    status = atcab_read_config_zone(config_data);
-    if (status != ATCA_SUCCESS)
-    {
-        fprintf(stderr, "Error reading config zone\n");
-        exit(status);
-    }
-	
-    config = set_configuration(config_data);
+    config = set_configuration();
 	
     fprintf(stdout, "Reading the lock Status:\n");
 

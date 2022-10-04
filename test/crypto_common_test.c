@@ -99,36 +99,37 @@ int main(int argc, char** argv)
 
     atcab_aes_cbc_init(&ctx, 5, 0 , iv);
 	
-    assert(cbc_encryption(NULL, NULL, 0, 0, ctx) == -1);
-    assert(cbc_encryption(NULL, text, -4, 0, ctx) == -1);
-    assert(cbc_encryption(NULL, text, 5, 0, ctx) == 0);
-    assert(cbc_encryption(filename, text, 5, 0, ctx) == 0);
+    assert(cbc_encryption(NULL, NULL, 0, ctx) == -1);
+    assert(cbc_encryption(NULL, text, -4, ctx) == -1);
+    assert(cbc_encryption(NULL, text, 5, ctx) == 0);
+    assert(cbc_encryption(filename, text, 5, ctx) == 0);
     fprintf(stdout, "cbcEncryption test result ---------------> \033[0;32mOK\n");
     reset_color();
     
     // cbcDecryption
-    assert(cbc_decryption(NULL, 0, 0, ctx) == -1);
-    assert(cbc_decryption(NULL, -10, 0, ctx) == -1);
-    assert(cbc_decryption("enc.txt", 5, 0, ctx) == 0);
+    assert(cbc_decryption(NULL, 0, ctx) == -1);
+    assert(cbc_decryption(NULL, -10, ctx) == -1);
+    assert(cbc_decryption("enc.txt", 5, ctx) == 0);
     fprintf(stdout, "cbcDecryption test result ---------------> \033[0;32mOK\n");
     reset_color();
     
     // cmacEncryption
     struct atca_aes_cbc_ctx ctx1;
+    uint8_t mac[TEST_TAG_SIZE];
     
     atcab_aes_cbc_init(&ctx1, 5, 0 , iv);
     
-    assert(cmac_encryption(NULL, NULL, 0, 0, ctx1) == -1);
-    assert(cmac_encryption(NULL, text, -4, 0, ctx1) == -1);
-    assert(cmac_encryption(NULL, text, 5, 0, ctx1) == 0);
-    assert(cmac_encryption(filename, text, 5, 0, ctx1) == 0);
+    assert(cmac_encryption(NULL, NULL, 0, ctx1, mac) == -1);
+    assert(cmac_encryption(NULL, text, -4, ctx1, mac) == -1);
+    assert(cmac_encryption(NULL, text, 5, ctx1, mac) == 0);
+    assert(cmac_encryption(filename, text, 5, ctx1, mac) == 0);
     fprintf(stdout, "cmacEncryption test result ---------------> \033[0;32mOK\n");
     reset_color();
      
     // cmacDecryption
-    assert(cmac_decryption(NULL, 0, 0, ctx1) == -1);
-    assert(cmac_decryption(NULL, -10, 0, ctx1) == -1);
-    assert(cmac_decryption("enc.txt", 5, 0, ctx1) == 0);
+    assert(cmac_decryption(NULL, 0, ctx1, mac) == -1);
+    assert(cmac_decryption(NULL, -10, ctx1, mac) == -1);
+    assert(cmac_decryption("enc.txt", 5, ctx1, mac) == 0);
     fprintf(stdout, "cmacDecryption test result ---------------> \033[0;32mOK\n");
     reset_color();
     
