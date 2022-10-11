@@ -26,10 +26,7 @@ int main (int argc, char** argv)
 	return -1;
     }
 
-    fprintf(stdout, "Random number generated succesfully!\n");
-    fprintf(stdout, "Decimal format: %d\n", rand_out);
-
-    fprintf(stdout, "Hexadecimal format: ");
+    fprintf(stdout, "Generated random number: ");
     print_hex_to_file(rand_out, OUTNONCE_SIZE, stdout);
 
     return 0;
